@@ -1,0 +1,4 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.wymc.robot.configuration.RobotClientAutoConfiguration,\
+com.wymc.robot.configuration.ListenerHandlerPostProcesser,\
+com.wymc.robot.server.configuration.RobotServerAutoConfiguration
