@@ -111,8 +111,8 @@ import io.netty.util.CharsetUtil;
 public class RobotHttpClient implements RobotClient {
 	private static final Logger logger = LoggerFactory.getLogger(RobotHttpClient.class);
 	private final NioEventLoopGroup group = new NioEventLoopGroup();
-	private Bootstrap bootstrap = new Bootstrap();
-	private ChannelInitializer<SocketChannel> pipeline = new RobotHttpClientPipeline();
+	private final Bootstrap bootstrap = new Bootstrap();
+	private final ChannelInitializer<SocketChannel> pipeline = new RobotHttpClientPipeline();
 	private final String host;
 	private final int port;
 	private final boolean useWs = false;
@@ -134,6 +134,38 @@ public class RobotHttpClient implements RobotClient {
 		bootstrap.group(group).channel(NioSocketChannel.class).handler(pipeline);
 		this.host = host;
 		this.port = port;
+	}
+
+	public int getReconnectDelayTime() {
+		return reconnectDelayTime;
+	}
+
+	public void setReconnectDelayTime(int reconnectDelayTime) {
+		this.reconnectDelayTime = reconnectDelayTime;
+	}
+
+	public int getMaxRespondTime() {
+		return maxRespondTime;
+	}
+
+	public void setMaxRespondTime(int maxRespondTime) {
+		this.maxRespondTime = maxRespondTime;
+	}
+
+	public int getConnectTimes() {
+		return connectTimes;
+	}
+
+	public void setConnectTimes(int connectTimes) {
+		this.connectTimes = connectTimes;
+	}
+
+	public int getReconnectTimes() {
+		return reconnectTimes;
+	}
+
+	public void setReconnectTimes(int reconnectTimes) {
+		this.reconnectTimes = reconnectTimes;
 	}
 
 	@Override
