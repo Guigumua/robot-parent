@@ -41,8 +41,9 @@ public class FriendRequestEvent extends RequestEvent implements Serializable {
 			return remark;
 		}
 
-		public void setRemark(String remark) {
+		public EventResponse setRemark(String remark) {
 			this.remark = remark;
+			return this;
 		}
 
 	}

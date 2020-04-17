@@ -15,6 +15,7 @@ public class CQCode {
 	private static final String separator = ",";
 	private static final String suffix = "]";
 	private static final String link = "=";
+	public static final String TEXT_TYPE = "CQ:text";
 //	[CQ:face,id={1}]
 	public static final String FACE_TYPE = "CQ:face";
 //	[CQ:emoji,id={1}]
@@ -45,9 +46,11 @@ public class CQCode {
 	public static final String SIGN_TYPE = "CQ:sign";
 //	[CQ:music,type={1},id={2},style={3}]
 //	[CQ:music,type=custom,url={1},audio={2},title={3},content={4},image={5}]
-	public static final String MUSICE_TYPE = "CQ:music";
+	public static final String MUSIC_TYPE = "CQ:music";
 //	[CQ:share,url={1},title={2},content={3},image={4}]
 	public static final String SHARE_TYPE = "CQ:share";
+
+	private CQCode(){}
 
 	private String type;
 
@@ -139,6 +142,16 @@ public class CQCode {
 		return cqCodes;
 	}
 
+	/**
+	 * 文本类型cq
+	 * @param text
+	 * @return
+	 */
+	public static CQCode getText(String text){
+		CQCode code = new CQCode();
+		code.put("text",text);
+		return code;
+	}
 	/**
 	 * 获取系统表情的cqcode
 	 * 
@@ -278,7 +291,6 @@ public class CQCode {
 	/**
 	 * 戳一戳 私聊有效
 	 * 
-	 * @param type
 	 * @return
 	 */
 	public static CQCode getShake() {
@@ -330,7 +342,7 @@ public class CQCode {
 	 */
 	public static CQCode getMusic(String type, long id) {
 		CQCode code = new CQCode();
-		code.setType(MUSICE_TYPE);
+		code.setType(MUSIC_TYPE);
 		code.put("type", type);
 		code.put("id", id);
 		return code;
@@ -348,7 +360,7 @@ public class CQCode {
 	 */
 	public static CQCode getCustomMusic(String url, String audioUrl, String title, String content, String image) {
 		CQCode code = new CQCode();
-		code.setType(MUSICE_TYPE);
+		code.setType(MUSIC_TYPE);
 		code.put("url", url);
 		code.put("audio", audioUrl);
 		code.put("title", title);
@@ -374,5 +386,30 @@ public class CQCode {
 		code.put("content", content);
 		code.put("image", image);
 		return code;
+	}
+	public static class CQAppender{
+		private final List<CQCode> cqCodeList;
+		private CQAppender(List<CQCode> codeList){
+			this.cqCodeList = codeList;
+		}
+		public CQAppender append(CQCode code){
+			cqCodeList.add(code);
+			return this;
+		}
+		public CQAppender append(String text){
+			cqCodeList.add(CQCode.getText(text));
+			return this;
+		}
+		public String build(){
+			StringBuilder builder = new StringBuilder();
+			for (CQCode code : cqCodeList) {
+				builder.append(code.toString());
+			}
+			return builder.toString();
+		}
+	}
+
+	public static CQAppender appender(){
+		return new CQAppender(new ArrayList<>());
 	}
 }

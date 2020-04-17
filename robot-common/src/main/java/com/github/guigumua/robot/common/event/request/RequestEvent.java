@@ -70,9 +70,10 @@ public abstract class RequestEvent implements Event {
 		private boolean approve;
 
 		@Override
-		public void setBlock(boolean block) {
+		public EventResponse setBlock(boolean block) {
 			this.block = block;
-		}
+			return this;
+        }
 
 		@Override
 		public boolean isBlock() {
@@ -83,8 +84,9 @@ public abstract class RequestEvent implements Event {
 			return approve;
 		}
 
-		public void setApprove(boolean approve) {
+		public EventResponse setApprove(boolean approve) {
 			this.approve = approve;
+			return this;
 		}
 
 	}

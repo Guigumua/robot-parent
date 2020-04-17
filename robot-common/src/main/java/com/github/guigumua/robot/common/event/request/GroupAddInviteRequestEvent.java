@@ -59,8 +59,9 @@ public class GroupAddInviteRequestEvent extends RequestEvent implements Serializ
 			return reason;
 		}
 
-		public void setReason(String reason) {
+		public EventResponse setReason(String reason) {
 			this.reason = reason;
+			return this;
 		}
 
 	}

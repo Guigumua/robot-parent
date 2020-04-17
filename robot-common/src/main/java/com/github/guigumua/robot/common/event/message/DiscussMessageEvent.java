@@ -4,12 +4,6 @@ import com.alibaba.fastjson.annotation.JSONField;
 import com.github.guigumua.robot.common.event.EventType;
 
 public class DiscussMessageEvent extends MessageEvent {
-	/**
-	 * 
-	 */
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -1985646106140830426L;
 	private int discussId;
 	private final String messageType = "discuss";
@@ -51,8 +45,9 @@ public class DiscussMessageEvent extends MessageEvent {
 			return atSender;
 		}
 
-		public void setAtSender(boolean atSender) {
+		public EventResponse setAtSender(boolean atSender) {
 			this.atSender = atSender;
+			return this;
 		}
 
 	}

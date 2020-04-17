@@ -1,7 +1,7 @@
 #eclipse files
-.classpath
-.project
-.settings/
+*.classpath
+*.project
+*.settings/
 # Built application files
 *.apk
 *.ap_
@@ -38,6 +38,6 @@ captures/
 
 # Intellij
 *.iml
-
+*.idea/
 # Keystore files
 *.jks

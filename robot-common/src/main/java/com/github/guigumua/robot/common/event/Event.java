@@ -3,6 +3,7 @@ package com.github.guigumua.robot.common.event;
 import java.io.Serializable;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.github.guigumua.robot.common.event.request.RequestEvent;
 
 public interface Event extends Serializable {
 	String getPostType();
@@ -16,8 +17,8 @@ public interface Event extends Serializable {
 
 	void setSelfId(long selfId);
 
-	public static interface EventResponse extends Serializable {
-		void setBlock(boolean isBlock);
+	interface EventResponse extends Serializable {
+		Event.EventResponse setBlock(boolean isBlock);
 
 		boolean isBlock();
 	}
