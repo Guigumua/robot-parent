@@ -8,5 +8,5 @@ cd robot-simple-starter
 mvn install
 ```
 
-[使用方法](https://github.com/Guigumua/robot-simple-starter/tree/master/robot-simple-service)
+[使用方法](https://github.com/Guigumua/robot-parent/wiki)
 
