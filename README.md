@@ -1,6 +1,4 @@
-# robot-simple-starter
-
-### 快速开始
+# robot-starter
 
 ```shell
 git clone https://github.com/Guigumua/robot-simple-starter.git
