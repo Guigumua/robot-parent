@@ -1,7 +1,7 @@
-# robot-starter
+# robot-parent
 
 ```shell
-git clone https://github.com/Guigumua/robot-simple-starter.git
+git clone https://github.com/Guigumua/robot-parent.git
 cd robot-simple-starter
 mvn install
 ```
