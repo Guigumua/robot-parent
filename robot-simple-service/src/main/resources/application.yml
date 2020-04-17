@@ -1,7 +1,0 @@
-robot:
-   service:
-      host: localhost
-      port: 80
-      robots:
-      -  host: 127.0.0.1
-         port: 5700

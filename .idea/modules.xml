@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/robot-common/robot-common.iml" filepath="$PROJECT_DIR$/robot-common/robot-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/robot-dependencies.iml" filepath="$PROJECT_DIR$/robot-dependencies.iml" />
+      <module fileurl="file://$PROJECT_DIR$/robot-starter/robot-starter.iml" filepath="$PROJECT_DIR$/robot-starter/robot-starter.iml" />
+    </modules>
+  </component>
+</project>

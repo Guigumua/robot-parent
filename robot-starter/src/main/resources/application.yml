@@ -1,0 +1,8 @@
+robot:
+   server:
+      host: localhost
+      port: 6700
+   client:
+      clients:
+         -  host: 127.0.0.1
+            port: 5700
