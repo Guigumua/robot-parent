@@ -387,6 +387,7 @@ public class CQCode {
 		code.put("image", image);
 		return code;
 	}
+
 	public static class CQAppender{
 		private final List<CQCode> cqCodeList;
 		private CQAppender(List<CQCode> codeList){

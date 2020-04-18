@@ -14,7 +14,7 @@ import com.github.guigumua.robot.common.event.message.GroupMessageEvent;
 import com.github.guigumua.robot.common.event.message.MessageEvent;
 import com.github.guigumua.robot.common.event.notice.FriendAddNoticeEvent;
 import com.github.guigumua.robot.common.event.request.GroupAddInviteRequestEvent;
-import com.github.guigumua.robot.common.exception.RespondTimeOutExcption;
+import com.github.guigumua.robot.common.exception.RespondTimeOutException;
 import com.github.guigumua.robot.common.request.CanSendImageRequest;
 import com.github.guigumua.robot.common.request.CanSendRecordRequest;
 import com.github.guigumua.robot.common.request.CoolQRequest;
@@ -546,7 +546,7 @@ public class RobotWebSocketClient implements RobotClient {
 				if (System.currentTimeMillis() - start < 10000) {
 					Thread.sleep(1);
 				} else {
-					throw new RespondTimeOutExcption("请求" + request.getAction() + "响应超时");
+					throw new RespondTimeOutException("请求" + request.getAction() + "响应超时");
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();

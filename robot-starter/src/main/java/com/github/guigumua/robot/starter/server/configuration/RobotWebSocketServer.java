@@ -137,6 +137,7 @@ public class RobotWebSocketServer implements RobotServer {
 
         @Override
         public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+            long start = System.currentTimeMillis();
             Channel ch = ctx.channel();
             FullHttpResponse response;
             // 判断接收的请求是否是牵手
@@ -213,6 +214,8 @@ public class RobotWebSocketServer implements RobotServer {
                     ch.close();
                 }
             }
+            long end = System.currentTimeMillis();
+            logger.info("事件处理耗时：{}ms",end - start);
         }
 
         @Override
