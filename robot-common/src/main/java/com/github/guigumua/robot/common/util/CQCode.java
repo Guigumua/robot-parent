@@ -94,7 +94,7 @@ public class CQCode {
 		return builder.toString();
 	}
 
-	private static final String regex = "\\[CQ:[a-z]*(,[a-z]*=[^,\\s]*)*\\]";
+	private static final String regex = "\\[CQ:[a-z]+(,[a-z]+=[^,\\s\\[\\]]*)*\\]";
 	private static final Pattern p = Pattern.compile(regex);
 
 	/**
@@ -400,13 +400,18 @@ public class CQCode {
 			cqCodeList.add(CQCode.getText(text));
 			return this;
 		}
-		public String build(){
+		public String buildStr(){
 			StringBuilder builder = new StringBuilder();
 			for (CQCode code : cqCodeList) {
 				builder.append(code.toString());
 			}
 			return builder.toString();
 		}
+	}
+
+	public CQAppender append(CQCode code){
+		CQAppender ap = new CQAppender(new ArrayList<>());
+		return ap.append(code);
 	}
 
 	public static CQAppender appender(){
