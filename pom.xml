@@ -10,7 +10,17 @@
 	<groupId>com.github.guigumua</groupId>
 	<artifactId>robot-parent</artifactId>
 	<version>0.0.2-SNAPSHOT</version>
+	<properties>
+		<robot-common.version>0.0.2-SNAPSHOT</robot-common.version>
+		<robot-starter.version>0.0.2-SNAPSHOT</robot-starter.version>
+	</properties>
 	<packaging>pom</packaging>
+
+	<modules>
+		<module>robot-common</module>
+		<module>robot-starter</module>
+	</modules>
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -20,10 +30,7 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-	<modules>
-		<module>robot-common</module>
-		<module>robot-starter</module>
-	</modules>
+
 
 	<name>robot-parent</name>
 	<description>qqbot starter dependencies management</description>

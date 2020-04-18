@@ -263,6 +263,17 @@ public class CQCode {
 	}
 
 	/**
+	 * 艾特全体
+	 * @return
+	 */
+	public static CQCode getAtAll(){
+		CQCode code = new CQCode();
+		code.setType(AT_TYPE);
+		code.put("qq","all");
+		return code;
+	}
+
+	/**
 	 * 猜拳
 	 * 
 	 * @param type 1:石头 2:剪刀 3:布
