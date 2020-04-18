@@ -23,7 +23,7 @@ public interface CoolQHttpRequest extends CoolQRequest {
 
 	@JSONField(serialize = false)
 	@Override
-	default public FullHttpRequest getRequest() {
+	default FullHttpRequest getRequest() {
 		FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, uri());
 		ByteBuf content = request.content();
 		content.writeBytes(JsonUtil.toJSON(this).getBytes(CharsetUtil.UTF_8));

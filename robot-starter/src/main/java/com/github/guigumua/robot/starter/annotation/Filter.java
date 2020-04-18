@@ -17,7 +17,7 @@ public @interface Filter {
 	/**
 	 * 监听消息的正则
 	 * 
-	 * @return
+	 * @return 正则
 	 */
 	@AliasFor(attribute = "value")
 	String regex() default ".*";
@@ -25,7 +25,7 @@ public @interface Filter {
 	/**
 	 * 同regex
 	 * 
-	 * @return
+	 * @return 同regex
 	 */
 	@AliasFor(attribute = "regex")
 	String value() default ".*";
@@ -33,7 +33,7 @@ public @interface Filter {
 	/**
 	 * 拦截器
 	 * 
-	 * @return
+	 * @return 拦截器列表
 	 */
 	Class<? extends ListenerFilter>[] filters() default {};
 }

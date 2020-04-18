@@ -10,6 +10,9 @@ import org.springframework.core.annotation.AliasFor;
 
 import com.github.guigumua.robot.common.event.EventType;
 
+/**
+ * 定制监听器的映射和拦截规则
+ */
 @Target({ ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

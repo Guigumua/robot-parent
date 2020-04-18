@@ -121,11 +121,9 @@ import io.netty.util.CharsetUtil;
 public class RobotWebSocketClient implements RobotClient {
 	private static final Logger logger = LoggerFactory.getLogger(RobotWebSocketClient.class);
 	private final NioEventLoopGroup group = new NioEventLoopGroup();
-	private Bootstrap bootstrap = new Bootstrap();
-	private ChannelInitializer<SocketChannel> pipeline = new RobotWebSocketClientPipeline();
+	private final Bootstrap bootstrap = new Bootstrap();
 	private final String host;
 	private final int port;
-	private final boolean useWs = true;
 	private WebSocketClientHandshaker handshaker;
 	private ChannelPromise handshakeFuture;
 	private Channel channel;
@@ -133,6 +131,7 @@ public class RobotWebSocketClient implements RobotClient {
 	private URI uri;
 
 	public RobotWebSocketClient(String host, int port) {
+		ChannelInitializer<SocketChannel> pipeline = new RobotWebSocketClientPipeline();
 		bootstrap.group(group).channel(NioSocketChannel.class).handler(pipeline);
 		this.host = host;
 		this.port = port;
@@ -167,6 +166,7 @@ public class RobotWebSocketClient implements RobotClient {
 
 	@Override
 	public boolean isUseWs() {
+		boolean useWs = true;
 		return useWs;
 	}
 
@@ -189,15 +189,6 @@ public class RobotWebSocketClient implements RobotClient {
 		return request.getResponse();
 	}
 
-	/**
-	 * 发送消息，默认异步执行
-	 * 
-	 * @param request coolq API接收的请求格式的封装对象
-	 * @return 发送结果响应，异步执行时响应为null
-	 */
-	public SendMsgRequest.Response sendMsg(SendMsgWsRequest request) {
-		return ((SendMsgRequest.Response) send0(request));
-	}
 
 	@Override
 	public SendMsgRequest.Response sendMsg(MessageEvent e, String message) {
@@ -547,16 +538,10 @@ public class RobotWebSocketClient implements RobotClient {
 		channel.writeAndFlush(frame);
 	}
 
-	/**
-	 * 核心同步api
-	 * 
-	 * @param request
-	 * @return
-	 */
 	public Response<?> request(CoolQWebSocketRequest request) {
 		long start = System.currentTimeMillis();
 		requestAsync(request);
-		for (; request.getResponse() == null;) {
+		while (request.getResponse() == null) {
 			try {
 				if (System.currentTimeMillis() - start < 10000) {
 					Thread.sleep(1);
@@ -573,7 +558,7 @@ public class RobotWebSocketClient implements RobotClient {
 	private class RobotWebSocketClientPipeline extends ChannelInitializer<SocketChannel> {
 
 		@Override
-		protected void initChannel(SocketChannel ch) throws Exception {
+		protected void initChannel(SocketChannel ch) {
 			ChannelPipeline p = ch.pipeline();
 			p.addLast(new HttpClientCodec(), new HttpObjectAggregator(1 << 20));
 			p.addLast("handler", new RobotWebSocketClientHandler());
@@ -583,13 +568,13 @@ public class RobotWebSocketClient implements RobotClient {
 	private class RobotWebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
 
 		@Override
-		public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+		public void channelRegistered(ChannelHandlerContext ctx) {
 			handshakeFuture = ctx.newPromise();
 			channel = ctx.channel();
 		}
 
 		@Override
-		public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+		public void channelRead0(ChannelHandlerContext ctx, Object msg) {
 			Channel ch = ctx.channel();
 			FullHttpResponse response;
 			// 判断接收的请求是否是牵手
@@ -622,9 +607,10 @@ public class RobotWebSocketClient implements RobotClient {
 					String json = textFrame.content().toString(CharsetUtil.UTF_8);
 					CoolQRequest.Response<?> res = JsonUtil.toBean(json, request.getResponseClass());
 					request.setResponse(res);
+					assert res != null;
 					logger.debug("{}请求完成,响应：{}", request.getAction(), res.toString());
 				} else if (frame instanceof BinaryWebSocketFrame) {
-//					System.out.println("二进制WebSocketFrame");
+
 				} else if (frame instanceof PongWebSocketFrame) {
 					// 返回心跳监测
 					// System.out.println("WebSocket客户端接收到pong");
@@ -636,7 +622,7 @@ public class RobotWebSocketClient implements RobotClient {
 		}
 
 		@Override
-		public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+		public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
 			cause.printStackTrace();
 		}
 

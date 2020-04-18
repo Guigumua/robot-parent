@@ -5,9 +5,10 @@
 	<parent>
 		<groupId>com.github.guigumua</groupId>
 		<artifactId>robot-parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>0.0.1-RELEASE</version>
 	</parent>
 	<artifactId>robot-common</artifactId>
+	<name>robot-common</name>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
