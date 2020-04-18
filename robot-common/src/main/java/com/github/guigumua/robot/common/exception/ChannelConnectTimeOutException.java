@@ -11,7 +11,6 @@ public class ChannelConnectTimeOutException extends RuntimeException {
 	public ChannelConnectTimeOutException(String msg) {
 		this.message = msg;
 	}
-
 	public String getMessage() {
 		return message;
 	}

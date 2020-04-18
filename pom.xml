@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>com.github.guigumua</groupId>
 	<artifactId>robot-parent</artifactId>
-	<version>0.0.1-RELEASE</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<dependencyManagement>
 		<dependencies>
@@ -24,6 +24,7 @@
 		<module>robot-common</module>
 		<module>robot-starter</module>
 	</modules>
+
 	<name>robot-parent</name>
 	<description>qqbot starter dependencies management</description>
 	<url>https://github.com/Guigumua/robot-parent</url>
@@ -89,7 +90,6 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
-<!--						<version>1.5</version>-->
 						<executions>
 							<execution>
 								<phase>verify</phase>
