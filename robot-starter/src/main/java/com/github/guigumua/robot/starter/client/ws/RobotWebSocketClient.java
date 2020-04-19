@@ -166,8 +166,7 @@ public class RobotWebSocketClient implements RobotClient {
 
 	@Override
 	public boolean isUseWs() {
-		boolean useWs = true;
-		return useWs;
+		return true;
 	}
 
 	@Override

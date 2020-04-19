@@ -120,7 +120,7 @@ public class ListenerContextBeanPostProcessor implements BeanPostProcessor, Appl
     private ListenerContext resolveAnnotationFilter(Method method, ListenerContext context) {
         if (method.isAnnotationPresent(Filter.class)) {
             Filter filter = AnnotationUtils.findAnnotation(method, Filter.class);
-            String regex = filter.value();
+            String[] regex = filter.value();
             Class<? extends ListenerFilter>[] filterClasses = filter.filters();
             // 所有拦截器配置
             for (Class<? extends ListenerFilter> filterClz : filterClasses) {

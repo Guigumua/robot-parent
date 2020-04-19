@@ -1,4 +1,4 @@
-package com.github.guigumua.robot.starter.configuration;
+package com.github.guigumua.robot.starter.client;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import com.github.guigumua.robot.common.request.GetLoginInfoRequest;
 import com.github.guigumua.robot.common.request._GetVipInfoRequest;
-import com.github.guigumua.robot.starter.client.RobotClient;
 import com.github.guigumua.robot.starter.client.http.RobotHttpClient;
 import com.github.guigumua.robot.starter.client.ws.RobotWebSocketClient;
 
@@ -61,5 +60,9 @@ public class RobotManager {
 
 	public int count() {
 		return CLIENTS.size();
+	}
+
+	public RobotClient getFirstClient(){
+		return clients().stream().findFirst().orElse(null);
 	}
 }

@@ -399,16 +399,16 @@ public class CQCode {
 		return code;
 	}
 
-	public static class CQAppender{
+	public static class CQCodeAppender {
 		private final List<CQCode> cqCodeList;
-		private CQAppender(List<CQCode> codeList){
+		private CQCodeAppender(List<CQCode> codeList){
 			this.cqCodeList = codeList;
 		}
-		public CQAppender append(CQCode code){
+		public CQCodeAppender append(CQCode code){
 			cqCodeList.add(code);
 			return this;
 		}
-		public CQAppender append(String text){
+		public CQCodeAppender append(String text){
 			cqCodeList.add(CQCode.getText(text));
 			return this;
 		}
@@ -421,12 +421,16 @@ public class CQCode {
 		}
 	}
 
-	public CQAppender append(CQCode code){
-		CQAppender ap = new CQAppender(new ArrayList<>());
+	public CQCodeAppender append(CQCode code){
+		CQCodeAppender ap = new CQCodeAppender(new ArrayList<>());
 		return ap.append(code);
 	}
+	public CQCodeAppender append(String text){
+		CQCodeAppender ap = new CQCodeAppender(new ArrayList<>());
+		return ap.append(text);
+	}
 
-	public static CQAppender appender(){
-		return new CQAppender(new ArrayList<>());
+	public static CQCodeAppender appender(){
+		return new CQCodeAppender(new ArrayList<>());
 	}
 }

@@ -14,7 +14,7 @@ mvn install
 
 > 更新日志
 >
-> 0.0.1-RELEASE:发布第一个版本
 >
 > 0.0.2-SNAPSHOT:修复了getCQCodes只能获取一个CQCode的bug,略微调整了一部分代码 2020-04-18 17:21
 >
+> 0.0.1-RELEASE:发布第一个版本

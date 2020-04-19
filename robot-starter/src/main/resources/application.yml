@@ -1,8 +1,35 @@
+spring:
+   profiles:
+      active: ws
+---
+spring:
+   profiles: http
 robot:
    server:
-      host: localhost
+      host: 0.0.0.0
+      port: 80
+   client:
+      clients:
+      -  host: 139.9.197.197
+         port: 5700
+         useWs: false
+logging:
+   level:
+      com.github.guigumua: debug
+---
+spring:
+   profiles: ws
+robot:
+   server:
+      use-ws: true
+      use-default-http-reject: false
+      host: 139.9.197.197
       port: 6700
    client:
       clients:
-         -  host: 127.0.0.1
-            port: 5700
+      -  host: 139.9.197.197
+         port: 6700
+         useWs: true
+logging:
+   level:
+      com.github.guigumua:  debug

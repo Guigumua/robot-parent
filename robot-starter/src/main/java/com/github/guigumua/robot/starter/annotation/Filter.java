@@ -20,7 +20,7 @@ public @interface Filter {
 	 * @return 正则
 	 */
 	@AliasFor(attribute = "value")
-	String regex() default ".*";
+	String[] regex() default ".*";
 
 	/**
 	 * 同regex
@@ -28,7 +28,13 @@ public @interface Filter {
 	 * @return 同regex
 	 */
 	@AliasFor(attribute = "regex")
-	String value() default ".*";
+	String[] value() default ".*";
+
+	long[] group() default {};
+
+	long[] qq() default {};
+
+	boolean isAt() default false;
 
 	/**
 	 * 拦截器

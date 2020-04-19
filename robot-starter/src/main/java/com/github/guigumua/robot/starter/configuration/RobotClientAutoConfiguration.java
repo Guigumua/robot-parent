@@ -2,6 +2,7 @@ package com.github.guigumua.robot.starter.configuration;
 
 import java.util.List;
 
+import com.github.guigumua.robot.starter.client.RobotManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
