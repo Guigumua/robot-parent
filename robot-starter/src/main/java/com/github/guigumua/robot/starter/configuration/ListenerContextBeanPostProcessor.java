@@ -144,6 +144,9 @@ public class ListenerContextBeanPostProcessor implements BeanPostProcessor, Appl
                 }
             }
             context.setRegex(regex);
+            context.setGroup(filter.group());
+            context.setQq(filter.qq());
+            context.setMatchTypes(filter.matchType());
         }
         return context;
     }
@@ -175,6 +178,7 @@ public class ListenerContextBeanPostProcessor implements BeanPostProcessor, Appl
                     // event类型的对象就跳过，等待调用时注入
                     if (Event.class.isAssignableFrom(clazz) || RobotClient.class.isAssignableFrom(clazz)) {
                         pm.put(i, parameters[i]);
+//                        params[i] = parameters[i];
                         continue;
                     }
                     // 有无参构造，可以构造一个实例
@@ -184,10 +188,12 @@ public class ListenerContextBeanPostProcessor implements BeanPostProcessor, Appl
                         params[i] = object;
                     } else {
                         pm.put(i, parameters[i]);
+//                        params[i] = parameters[i];
                     }
                 } catch (Exception e2) {
                     // 没有无参构造，不能构造等待调用时注入
                     pm.put(i, parameters[i]);
+//                    params[i] = parameters[i];
                 }
             }
         }

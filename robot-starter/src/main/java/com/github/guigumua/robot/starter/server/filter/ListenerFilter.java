@@ -27,6 +27,6 @@ public interface ListenerFilter extends Comparator<ListenerFilter> {
 
     @Override
     default int compare(ListenerFilter o1, ListenerFilter o2) {
-        return o2.sort() - o1.sort() > 0 ? 1 : -1;
+        return o2.sort() - o1.sort() >= 0 ? -1 : 1;
     }
 }

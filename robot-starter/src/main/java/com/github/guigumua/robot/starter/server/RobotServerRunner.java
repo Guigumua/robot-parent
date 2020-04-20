@@ -1,6 +1,5 @@
 package com.github.guigumua.robot.starter.server;
 
-import com.github.guigumua.robot.starter.server.RobotServer;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.ApplicationContext;

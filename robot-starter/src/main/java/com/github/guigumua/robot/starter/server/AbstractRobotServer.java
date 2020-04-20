@@ -44,15 +44,15 @@ public abstract class AbstractRobotServer implements RobotServer {
         Set<ListenerContext> listenerContexts = processor.mapping(event, globalMappingFilters);
         boolean isResponded = false;
         for (ListenerContext listenerContext : listenerContexts) {
-            processor.paramInject(listenerContext, event);
-            if (!processor.preFilter(listenerContext, event, globalPreFilters)) {
+            Object[] params = processor.paramInject(listenerContext, event);
+            if (!processor.preFilter(listenerContext, event, params, globalPreFilters)) {
                 continue;
             }
-            processor.doHandler(listenerContext, event);
-            if (processor.postFilter(listenerContext, event, globalPostFilters)) {
+            Object result = processor.doHandler(listenerContext, event, params);
+            if (processor.postFilter(listenerContext, event, params, globalPostFilters)) {
                 continue;
             }
-            if (processor.resultHandler(listenerContext, ctx.channel())) {
+            if (processor.resultHandler(listenerContext, result, ctx.channel())) {
                 isResponded = true;
             }
             if (listenerContext.isBreak()) {

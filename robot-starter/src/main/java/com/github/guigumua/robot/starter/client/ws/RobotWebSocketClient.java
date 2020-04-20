@@ -124,7 +124,8 @@ public class RobotWebSocketClient implements RobotClient {
 	private final Bootstrap bootstrap = new Bootstrap();
 	private final String host;
 	private final int port;
-	private WebSocketClientHandshaker handshaker;
+	private long selfId;
+	private WebSocketClientHandshaker handShaker;
 	private ChannelPromise handshakeFuture;
 	private Channel channel;
 	private boolean async = true;
@@ -136,6 +137,11 @@ public class RobotWebSocketClient implements RobotClient {
 		this.host = host;
 		this.port = port;
 		connect();
+	}
+
+	@Override
+	public long getSelfId() {
+		return selfId;
 	}
 
 	public boolean isAsync() {
@@ -151,17 +157,21 @@ public class RobotWebSocketClient implements RobotClient {
 			HttpHeaders httpHeaders = new DefaultHttpHeaders();
 			this.uri = new URI("ws://" + host + ":" + port + "/api");
 			// 进行握手
-			WebSocketClientHandshaker handshaker = WebSocketClientHandshakerFactory.newHandshaker(uri,
+			WebSocketClientHandshaker handShaker = WebSocketClientHandshakerFactory.newHandshaker(uri,
 					WebSocketVersion.V13, (String) null, true, httpHeaders);
 			// 需要协议的host和port
 			Channel channel = bootstrap.connect(uri.getHost(), uri.getPort()).sync().channel();
-			this.handshaker = handshaker;
-			handshaker.handshake(channel);
+			this.handShaker = handShaker;
+			handShaker.handshake(channel);
 			Thread.sleep(1000);
 			this.handshakeFuture.sync();
 		} catch (URISyntaxException | InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void setSelfId(long selfId) {
+		this.selfId = selfId;
 	}
 
 	@Override
@@ -577,11 +587,11 @@ public class RobotWebSocketClient implements RobotClient {
 			Channel ch = ctx.channel();
 			FullHttpResponse response;
 			// 判断接收的请求是否是牵手
-			if (!handshaker.isHandshakeComplete()) {
+			if (!handShaker.isHandshakeComplete()) {
 				try {
 					response = (FullHttpResponse) msg;
 					// 握手协议返回，设置结束握手
-					handshaker.finishHandshake(ch, response);
+					handShaker.finishHandshake(ch, response);
 					// 设置成功
 					handshakeFuture.setSuccess();
 					logger.debug("连接coolq api的websocket连接牵手成功！uri：{}", uri);

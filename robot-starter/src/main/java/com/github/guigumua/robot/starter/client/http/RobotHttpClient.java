@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.netty.handler.codec.http.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,10 +103,6 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpClientCodec;
-import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
 
@@ -116,6 +113,7 @@ public class RobotHttpClient implements RobotClient {
 	private final String host;
 	private final int port;
 	private boolean async = true;
+	private long selfId;
 	/**
 	 * 连接失败重连次数
 	 */
@@ -181,6 +179,15 @@ public class RobotHttpClient implements RobotClient {
 
 	public void setAsync(boolean async) {
 		this.async = async;
+	}
+
+	public void setSelfId(long selfId) {
+		this.selfId = selfId;
+	}
+
+	@Override
+	public long getSelfId() {
+		return selfId;
 	}
 
 	private final AtomicInteger times = new AtomicInteger(0);
@@ -634,6 +641,7 @@ public class RobotHttpClient implements RobotClient {
 
 		@Override
 		public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+			ctx.writeAndFlush(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,HttpResponseStatus.INTERNAL_SERVER_ERROR));
 			cause.printStackTrace();
 		}
 	}

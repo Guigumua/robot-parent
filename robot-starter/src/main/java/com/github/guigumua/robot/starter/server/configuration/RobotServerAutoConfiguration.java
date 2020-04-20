@@ -2,7 +2,7 @@ package com.github.guigumua.robot.starter.server.configuration;
 
 import com.github.guigumua.robot.starter.server.RobotServer;
 import com.github.guigumua.robot.starter.server.RobotServerEventProcessor;
-import com.github.guigumua.robot.starter.server.filter.RegexMappingFilter;
+import com.github.guigumua.robot.starter.server.filter.RootMappingFilter;
 import com.github.guigumua.robot.starter.server.http.RobotHttpServer;
 import com.github.guigumua.robot.starter.server.ws.RobotWebSocketServer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Import;
 
 @Configuration
 @EnableConfigurationProperties(RobotAutoConfigurationProperties.class)
-@Import(RegexMappingFilter.class)
+@Import(RootMappingFilter.class)
 public class RobotServerAutoConfiguration {
 
     private final RobotAutoConfigurationProperties properties;

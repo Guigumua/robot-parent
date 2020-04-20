@@ -7,11 +7,12 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.github.guigumua.robot.starter.annotation.MatchType;
 import com.github.guigumua.robot.starter.server.filter.MappingFilter;
 import com.github.guigumua.robot.starter.server.filter.PostFilter;
 import com.github.guigumua.robot.starter.server.filter.PreFilter;
 
-public class ListenerContext {
+public class ListenerContext implements Comparable<ListenerContext>{
     public static final ListenerHandlerComparator COMPARATOR = new ListenerHandlerComparator();
     /**
      * 执行的方法
@@ -38,17 +39,25 @@ public class ListenerContext {
      */
     private String[] regex;
     /**
+     * {@link com.github.guigumua.robot.starter.annotation.Filter}注解上的qq
+     */
+    private long[] qq;
+    /**
+     * {@link com.github.guigumua.robot.starter.annotation.Filter}注解上的group
+     */
+    private long[] group;
+    /**
      * 匹配拦截器列表
      */
-    private ArrayList<MappingFilter> mappingFilters = new ArrayList<MappingFilter>();
+    private ArrayList<MappingFilter> mappingFilters = new ArrayList<>();
     /**
      * 前置拦截器列表
      */
-    private ArrayList<PreFilter> preFilters = new ArrayList<PreFilter>();
+    private ArrayList<PreFilter> preFilters = new ArrayList<>();
     /**
      * 后置拦截器列表
      */
-    private ArrayList<PostFilter> postFilters = new ArrayList<PostFilter>();
+    private ArrayList<PostFilter> postFilters = new ArrayList<>();
     /**
      * 阻断
      */
@@ -61,12 +70,33 @@ public class ListenerContext {
     /**
      * 调用时才能注入的参数
      */
-    private Map<Integer, Parameter> paramsMap = new HashMap<Integer, Parameter>();
+    private Map<Integer, Parameter> paramsMap = new HashMap<>();
 
-    /**
-     * 监听器执行的结果
-     */
-    private Object result;
+    private MatchType[] matchTypes;
+
+    public MatchType[] getMatchTypes() {
+        return matchTypes;
+    }
+
+    public void setMatchTypes(MatchType[] matchTypes) {
+        this.matchTypes = matchTypes;
+    }
+
+    public long[] getQq() {
+        return qq;
+    }
+
+    public void setQq(long[] qq) {
+        this.qq = qq;
+    }
+
+    public long[] getGroup() {
+        return group;
+    }
+
+    public void setGroup(long[] group) {
+        this.group = group;
+    }
 
     public String[] getRegex() {
         return regex;
@@ -148,12 +178,9 @@ public class ListenerContext {
         return postFilters;
     }
 
-    public Object getResult() {
-        return result;
-    }
-
-    public void setResult(Object result) {
-        this.result = result;
+    @Override
+    public int compareTo(ListenerContext o) {
+        return getSort() - o.getSort() > 0 ? 1 : -1;
     }
 
     public static class ListenerHandlerComparator implements Comparator<ListenerContext> {

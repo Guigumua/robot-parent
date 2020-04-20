@@ -46,6 +46,7 @@ public class RobotManager {
 		try {
 			GetLoginInfoRequest.ResponseData info = client.getLoginInfo();
 			long userId = info.getUserId();
+			client.setSelfId(userId);
 			String nickname = info.getNickname();
 			_GetVipInfoRequest.ResponseData vipInfo = client._getVipInfo(userId);
 			int level = vipInfo.getLevel();

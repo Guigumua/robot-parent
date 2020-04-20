@@ -6,21 +6,23 @@ import com.alibaba.fastjson.annotation.JSONField;
 import com.github.guigumua.robot.common.event.request.RequestEvent;
 
 public interface Event extends Serializable {
-	String getPostType();
+    String getPostType();
 
-	EventType getEventType();
+    EventType getEventType();
 
-	EventResponse getResponse();
+    EventResponse getResponse();
 
-	@JSONField(serialize = false, deserialize = false)
-	long getSelfId();
+    long getUserId();
 
-	void setSelfId(long selfId);
+    @JSONField(serialize = false, deserialize = false)
+    long getSelfId();
 
-	interface EventResponse extends Serializable {
-		Event.EventResponse setBlock(boolean isBlock);
+    void setSelfId(long selfId);
 
-		boolean isBlock();
-	}
+    interface EventResponse extends Serializable {
+        Event.EventResponse setBlock(boolean isBlock);
+
+        boolean isBlock();
+    }
 
 }

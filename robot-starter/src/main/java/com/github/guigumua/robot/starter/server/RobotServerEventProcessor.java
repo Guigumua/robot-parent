@@ -64,10 +64,13 @@ public interface RobotServerEventProcessor {
      * @param context 监听器上下文
      * @param event   事件
      */
-    default void paramInject(ListenerContext context, Event event) {
+    default Object[] paramInject(ListenerContext context, Event event) {
         // 参数注入
         Map<Integer, Parameter> paramsMap = context.getParamsMap();
-        Object[] params = context.getParams();
+        Object[] preParams = context.getParams();
+        int length = preParams.length;
+        Object[] params = new Object[length];
+        System.arraycopy(params, 0, preParams, 0, length);
         for (Map.Entry<Integer, Parameter> e : paramsMap.entrySet()) {
             Integer i = e.getKey();
             Parameter p = e.getValue();
@@ -91,6 +94,7 @@ public interface RobotServerEventProcessor {
                 }
             }
         }
+        return params;
     }
 
     /**
@@ -99,14 +103,14 @@ public interface RobotServerEventProcessor {
      * @param globalFilters 全局拦截器
      * @return 是否放行
      */
-    default boolean preFilter(ListenerContext context, Event event, Set<PreFilter> globalFilters) {
+    default boolean preFilter(ListenerContext context, Event event, Object[] params, Set<PreFilter> globalFilters) {
         for (PreFilter filter : globalFilters) {
-            if (!filter.apply(event, context)) {
+            if (!filter.apply(event, context, params)) {
                 return false;
             }
         }
         for (PreFilter filter : context.getPreFilters()) {
-            if (!filter.apply(event, context)) {
+            if (!filter.apply(event, context, params)) {
                 return false;
             }
         }
@@ -119,10 +123,9 @@ public interface RobotServerEventProcessor {
      * @param context 监听器上下文
      * @param event   事件
      */
-    default void doHandler(ListenerContext context, Event event)
+    default Object doHandler(ListenerContext context, Event event, Object... params)
             throws Exception {
-        Object result = context.getMethod().invoke(context.getInvokeObj(), context.getParams());
-        context.setResult(result);
+        return context.getMethod().invoke(context.getInvokeObj(), params);
     }
 
     /**
@@ -132,14 +135,14 @@ public interface RobotServerEventProcessor {
      * @param event   事件
      * @return 是否拦截后续逻辑（v0.0.1目前只能拦截@Listener注解中的isBreak）
      */
-    default boolean postFilter(ListenerContext context, Event event, Set<PostFilter> globalPostFilters) {
+    default boolean postFilter(ListenerContext context, Event event, Object result, Set<PostFilter> globalPostFilters) {
         for (PostFilter filter : globalPostFilters) {
-            if (!filter.apply(event, context)) {
+            if (!filter.apply(event, context, result)) {
                 return false;
             }
         }
         for (PostFilter filter : context.getPostFilters()) {
-            if (!filter.apply(event, context)) {
+            if (!filter.apply(event, context, result)) {
                 return false;
             }
         }
@@ -153,7 +156,7 @@ public interface RobotServerEventProcessor {
      * @param channel 此次事件中读写用的通道
      * @return 是否用通道写回了结果
      */
-    default boolean resultHandler(ListenerContext context, Channel channel) {
+    default boolean resultHandler(ListenerContext context, Object result, Channel channel) {
         return false;
     }
 }

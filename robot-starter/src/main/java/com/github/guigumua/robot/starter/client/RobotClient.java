@@ -51,6 +51,10 @@ public interface RobotClient {
 
     void setAsync(boolean async);
 
+    long getSelfId();
+
+    void setSelfId(long userId);
+
 
     /**
      * @param e       事件

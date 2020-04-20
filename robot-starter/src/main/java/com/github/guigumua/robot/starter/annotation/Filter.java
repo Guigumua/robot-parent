@@ -30,11 +30,23 @@ public @interface Filter {
 	@AliasFor(attribute = "regex")
 	String[] value() default ".*";
 
+	/**
+	 *
+	 * @return 群号
+	 */
 	long[] group() default {};
 
+	/**
+	 *
+	 * @return QQ号
+	 */
 	long[] qq() default {};
 
-	boolean isAt() default false;
+	/**
+	 *
+	 * @return 匹配方式
+	 */
+	MatchType[] matchType() default MatchType.ANY_REGEX;
 
 	/**
 	 * 拦截器

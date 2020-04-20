@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 public class RobotHttpServerEventProcessorAdapter implements RobotServerEventProcessor {
     protected final DefaultFullHttpResponse DEFAULT_RESPONSE = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
             HttpResponseStatus.NO_CONTENT);
+
     @Override
     public Event resolveEvent(Object msg) {
         if (msg instanceof FullHttpRequest) {
@@ -36,8 +37,7 @@ public class RobotHttpServerEventProcessorAdapter implements RobotServerEventPro
     }
 
     @Override
-    public boolean resultHandler(ListenerContext context, Channel channel) {
-        Object result = context.getResult();
+    public boolean resultHandler(ListenerContext context, Object result, Channel channel) {
         if (result instanceof Event.EventResponse) {
             DefaultFullHttpResponse res = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
             ByteBuf content = res.content();
