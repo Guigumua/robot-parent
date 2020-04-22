@@ -14,6 +14,12 @@ mvn install
 
 > 更新日志
 >
+> 1.0.2
+>
+> - 修复了在监听非聊天消息事件不配置@Filter就无法映射的bug
+> - 增加了一些api
+> - ListenerContext现在可以用他来保存一些数据
+>
 > 1.0.1-RELEASE
 >
 > - 为@Filter新增了一个matchTypeModel的参数
