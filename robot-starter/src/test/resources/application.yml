@@ -1,0 +1,38 @@
+logging:
+   level:
+      com.github.guigumua: debug # 开启debug日志
+spring:
+   profiles:
+      active: ws
+   datasource:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://139.9.197.197:3306/qqbot?useUnicode=true&characterEncoding=utf-8&serverTimezone=GMT%2B8
+      username: root
+      password: root
+      type: com.alibaba.druid.pool.DruidDataSource
+---
+spring:
+   profiles: http
+robot:
+   server:
+      host: 0.0.0.0 # http允许接收的coolq端的ip
+      port: 80 # http允许接收的coolq端的端口
+   client:
+      clients:
+      -  host: 127.0.0.1 # coolq端所在的ip
+         port: 5700 # coolq配置中port对应的端口，也就是coolq端http接口的端口
+         useWs: false # 是否使用websocket（默认就是false）
+---
+spring:
+   profiles: ws
+robot:
+   server:
+      use-ws: true # 使用websocket连接来接收事件
+      use-default-http-reject: false # 是否使用http拒绝，如果coolq端和java端不在同一机器或者coolq没有配置post_url时关闭
+      host: 127.0.0.1 #139.9.197.197 # coolq端所在的ip
+      port: 6700 # coolq端开启的websocket连接的port，对应coolq配置中的ws_port项
+   client:
+      clients:
+      -  host: 127.0.0.1 #139.9.197.197 # 同server中的配置
+         port: 6700
+         useWs: true # 使用websocket

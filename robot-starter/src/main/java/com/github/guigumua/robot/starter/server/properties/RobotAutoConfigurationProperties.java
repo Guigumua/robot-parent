@@ -95,9 +95,27 @@ public class RobotAutoConfigurationProperties {
 
     public static class RobotClientProperties {
         private List<Client> clients = new ArrayList<>();
+        private String host;
+        private int port;
         private boolean useWs = false;
+        
+        public String getHost() {
+			return host;
+		}
 
-        public boolean isUseWs() {
+		public void setHost(String host) {
+			this.host = host;
+		}
+
+		public int getPort() {
+			return port;
+		}
+
+		public void setPort(int port) {
+			this.port = port;
+		}
+
+		public boolean isUseWs() {
             return useWs;
         }
 

@@ -7,7 +7,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.guigumua.robot.common.request.GetLoginInfoRequest;
 import com.github.guigumua.robot.common.request._GetVipInfoRequest;
 import com.github.guigumua.robot.starter.client.http.RobotHttpClient;
 import com.github.guigumua.robot.starter.client.ws.RobotWebSocketClient;
@@ -16,7 +15,7 @@ public class RobotManager {
 	private static final RobotManager instance = new RobotManager();
 	private static final Logger logger = LoggerFactory.getLogger(RobotManager.class);
 	private static final Map<Long, RobotClient> CLIENTS = new HashMap<>();
-
+	
 	private RobotManager() {
 	}
 
@@ -35,7 +34,7 @@ public class RobotManager {
 	public static RobotManager getInstance() {
 		return instance;
 	}
-
+	
 	public RobotClient registerRobotClient(String host, int port, boolean useWs) {
 		RobotClient client;
 		if (useWs) {
@@ -44,15 +43,13 @@ public class RobotManager {
 			client = new RobotHttpClient(host, port);
 		}
 		try {
-			GetLoginInfoRequest.ResponseData info = client.getLoginInfo();
-			long userId = info.getUserId();
-			client.setSelfId(userId);
-			String nickname = info.getNickname();
-			_GetVipInfoRequest.ResponseData vipInfo = client._getVipInfo(userId);
+			long selfId = client.getSelfId();
+			_GetVipInfoRequest.ResponseData vipInfo = client._getVipInfo(selfId);
+			String nickname = vipInfo.getNickname();
 			int level = vipInfo.getLevel();
 			logger.info("机器人注册成功");
-			logger.info("账号：{},等级：{},昵称：{}", userId, level, nickname);
-			CLIENTS.put(userId, client);
+			logger.info("账号：{},等级：{},昵称：{}", selfId, level, nickname);
+			CLIENTS.put(selfId, client);
 		} catch (Exception e) {
 			logger.warn("机器人注册失败！{}", e.getMessage());
 		}
@@ -62,8 +59,6 @@ public class RobotManager {
 	public int count() {
 		return CLIENTS.size();
 	}
-
-	public RobotClient getFirstClient(){
-		return clients().stream().findFirst().orElse(null);
-	}
+	
+	
 }

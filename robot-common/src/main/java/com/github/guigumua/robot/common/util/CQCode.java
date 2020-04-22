@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public class CQCode {
@@ -50,7 +51,8 @@ public class CQCode {
 //	[CQ:share,url={1},title={2},content={3},image={4}]
 	public static final String SHARE_TYPE = "CQ:share";
 
-	private CQCode(){}
+	private CQCode() {
+	}
 
 	private String type;
 
@@ -94,8 +96,10 @@ public class CQCode {
 		return builder.toString();
 	}
 
-	private static final String regex = "\\[CQ:[a-z]+(,[a-z]+=[^,\\s\\[\\]]*)*\\]";
-	private static final Pattern p = Pattern.compile(regex);
+	private static final String CQ_REGEX = "\\[CQ:[a-z]+(,[a-z]+=[^,\\s\\[\\]]*)*\\]";
+	private static final String IMAGE_REGEX = "\\[CQ:image,file=[^,\\s\\[\\]]*\\]";
+	private static final Pattern CQ_PATTERN = Pattern.compile(CQ_REGEX);
+	private static final Pattern IMAGE_PATTERN = Pattern.compile(IMAGE_REGEX);
 
 	/**
 	 * 获取消息中的cqcode
@@ -104,7 +108,7 @@ public class CQCode {
 	 * @return 消息中的第一个cqcode
 	 */
 	public static CQCode getCQCode(String message) {
-		Matcher matcher = p.matcher(message);
+		Matcher matcher = CQ_PATTERN.matcher(message);
 		if (matcher.find()) {
 			CQCode cqCode = new CQCode();
 			String cqString = matcher.group();
@@ -127,7 +131,7 @@ public class CQCode {
 	 */
 	public static List<CQCode> getCQCodes(String message) {
 		List<CQCode> cqCodes = new ArrayList<>();
-		Matcher matcher = p.matcher(message);
+		Matcher matcher = CQ_PATTERN.matcher(message);
 		while (matcher.find()) {
 			CQCode cqCode = new CQCode();
 			String cqString = matcher.group();
@@ -143,15 +147,44 @@ public class CQCode {
 	}
 
 	/**
+	 * 获得移除所有CQCode的消息
+	 * 
+	 * @param message
+	 * @return
+	 */
+	public static String removeAllCQ(String message) {
+		return RegExUtils.removeAll(message, CQ_PATTERN);
+	}
+
+	public static boolean onlyImage(String message) {
+		String string = RegExUtils.removeAll(message, IMAGE_PATTERN);
+		return StringUtils.isWhitespace(string);
+	}
+
+	public static boolean onlyImageExcludeText(String message) {
+		Matcher matcher = CQ_PATTERN.matcher(message);
+		while (matcher.find()) {
+			String cqString = matcher.group();
+			String substring = StringUtils.substring(cqString, 1, 9);
+			if (!IMAGE_TYPE.equals(substring)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
 	 * 文本类型cq
+	 * 
 	 * @param text
 	 * @return
 	 */
-	public static CQCode getText(String text){
+	public static CQCode getText(String text) {
 		CQCode code = new CQCode();
-		code.put("text",text);
+		code.put("text", text);
 		return code;
 	}
+
 	/**
 	 * 获取系统表情的cqcode
 	 * 
@@ -264,12 +297,13 @@ public class CQCode {
 
 	/**
 	 * 艾特全体
+	 * 
 	 * @return
 	 */
-	public static CQCode getAtAll(){
+	public static CQCode getAtAll() {
 		CQCode code = new CQCode();
 		code.setType(AT_TYPE);
-		code.put("qq","all");
+		code.put("qq", "all");
 		return code;
 	}
 
@@ -401,18 +435,22 @@ public class CQCode {
 
 	public static class CQCodeAppender {
 		private final List<CQCode> cqCodeList;
-		private CQCodeAppender(List<CQCode> codeList){
+
+		private CQCodeAppender(List<CQCode> codeList) {
 			this.cqCodeList = codeList;
 		}
-		public CQCodeAppender append(CQCode code){
+
+		public CQCodeAppender append(CQCode code) {
 			cqCodeList.add(code);
 			return this;
 		}
-		public CQCodeAppender append(String text){
+
+		public CQCodeAppender append(String text) {
 			cqCodeList.add(CQCode.getText(text));
 			return this;
 		}
-		public String buildStr(){
+
+		public String buildStr() {
 			StringBuilder builder = new StringBuilder();
 			for (CQCode code : cqCodeList) {
 				builder.append(code.toString());
@@ -421,16 +459,26 @@ public class CQCode {
 		}
 	}
 
-	public CQCodeAppender append(CQCode code){
+	public CQCodeAppender append(CQCode code) {
 		CQCodeAppender ap = new CQCodeAppender(new ArrayList<>());
 		return ap.append(code);
 	}
-	public CQCodeAppender append(String text){
+
+	public CQCodeAppender append(String text) {
 		CQCodeAppender ap = new CQCodeAppender(new ArrayList<>());
 		return ap.append(text);
 	}
 
-	public static CQCodeAppender appender(){
+	public static CQCodeAppender appender() {
 		return new CQCodeAppender(new ArrayList<>());
+	}
+
+	public static void main(String[] args) {
+		String str = "[CQ:image,file=asdfasdf.jpg][CQ:image,file=asdasdfasdfasdff.jpg]";
+		String test = "[CQ:image,file=asdfasdf.jpg]testasdfqwerqwer[CQ:image,file=asdasdfasdfasdff.jpg][CQ:text,file=asdasdfasdfasdff.jpg]";
+		System.out.println(onlyImage(str));
+		System.out.println(onlyImage(test));
+		System.out.println(removeAllCQ(test));
+		System.out.println(onlyImageExcludeText(test));
 	}
 }

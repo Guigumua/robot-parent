@@ -8,8 +8,14 @@ import java.lang.annotation.Target;
 
 import org.springframework.core.annotation.AliasFor;
 
+import com.github.guigumua.robot.starter.annotation.MatchType.MatchTypeModel;
 import com.github.guigumua.robot.starter.server.filter.ListenerFilter;
 
+/**
+ * 
+ * @author Administrator
+ *
+ */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
@@ -47,6 +53,13 @@ public @interface Filter {
 	 * @return 匹配方式
 	 */
 	MatchType[] matchType() default MatchType.ANY_REGEX;
+
+	/**
+	 * 多匹配方式的处理逻辑
+	 * 
+	 * @return
+	 */
+	MatchTypeModel matchTypeModel() default MatchTypeModel.ANY;
 
 	/**
 	 * 拦截器

@@ -3,7 +3,6 @@ package com.github.guigumua.robot.common.event;
 import java.io.Serializable;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import com.github.guigumua.robot.common.event.request.RequestEvent;
 
 public interface Event extends Serializable {
     String getPostType();

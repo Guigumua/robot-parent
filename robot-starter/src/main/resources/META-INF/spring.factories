@@ -1,7 +1,7 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   com.github.guigumua.robot.starter.server.configuration.RobotServerAutoConfiguration,\
-  com.github.guigumua.robot.starter.configuration.RobotClientAutoConfiguration,\
-  com.github.guigumua.robot.starter.configuration.ListenerContextBeanPostProcessor,\
+  com.github.guigumua.robot.starter.client.RobotClientAutoConfiguration,\
+  com.github.guigumua.robot.starter.server.listener.register.ListenerContextBeanPostProcessor,\
   com.github.guigumua.robot.starter.server.RobotServerRunner,\
   com.github.guigumua.robot.starter.server.ws.DefaultWebSocketServerEventProcessor,\
   com.github.guigumua.robot.starter.server.http.DefaultRobotHttpServerEventProcessor

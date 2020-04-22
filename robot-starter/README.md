@@ -26,6 +26,8 @@
 
 CQHttp配置，打开coolq安装路径下的`data\app\io.github.richardchien.coolqhttpapi\config`目录，配置`账号.json`文件，`账号`是你要登陆coolq的机器人qq账号。下面这段是必须配置，其他暂时不列出来。
 
+如果你不知道怎么配置，你可以删除将下面的配置直接覆盖掉里面的内容
+
 ```json
 {
   "host": "0.0.0.0",
@@ -35,28 +37,79 @@ CQHttp配置，打开coolq安装路径下的`data\app\io.github.richardchien.coo
 }
 ```
 
-maven依赖
+```xml
+<dependencies>
+	<dependency>
+		<groupId>com.github.guigumua</groupId>
+		<artifactId>robot-starter</artifactId>
+		<version>1.0.2</version>
+	</dependency>
+</dependencies>
+```
+
+#### 0基础maven快速开始
+
+如果你有任何maven项目的开发经验，你可以复制maven坐标后直接跳过这段
+
+新建一个maven项目
+
+![image-20200422204802160](image/README/image-20200422204802160.png)
+
+勾选创建简单项目
+
+![image-20200422204859886](image/README/image-20200422204859886.png)
+
+为项目命名
+
+![image-20200422205019932](image/README/image-20200422205019932.png)
+
+打开项目中的pom文件，将下面的依赖复制到`project`标签下：
 
 ```xml
-<dependency>
-    <groupId>com.github.guigumua</groupId>
-    <artifactId>robot-starter</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-</dependency>
+<dependencies>
+	<dependency>
+		<groupId>com.github.guigumua</groupId>
+		<artifactId>robot-starter</artifactId>
+		<version>1.0.2</version>
+	</dependency>
+</dependencies>
 ```
+
+如图：
+
+![image-20200422205255560](image/README/image-20200422205255560.png)
+
+完成后，`eclipse`按`alt+f5`后直接`enter`刷新maven依赖。完成后，项目的结构如图，会多出一个`maven dependencies`：
+
+![image-20200422205731246](image/README/image-20200422205731246.png)
+
+然后，在`src/main/resources`下新建一个`application.yml`文件。（eclipse这方面的操作比较脑瘫，建议选中`src/mian/resources`后，按下`alt+enter`，点击下图所示的图标，跳转到文件浏览器，然后新建文件。
+
+![image-20200422210045500](image/README/image-20200422210045500.png)
+
+新建完成后，选中`src/main/resources`按`f5`刷新，可以看到目录下多了个`application.yml`文件，打开它，复制下面的配置项到其中去。
 
 application.yml配置
 
 ```yaml
 robot:
-   server:
-      host: 0.0.0.0
-      port: 80
    client:
-      clients:
-      -  host: 127.0.0.1
-         port: 5700
+      host: 127.0.0.1
+      port: 5700
 ```
+
+如果你不懂`YAML`这种语法，你可以先学习一下。或者使用`application.properties`文件来取代`application.yml`，同时，里面的写法改成如下的结构：
+
+```properties
+robot.client.host=127.0.0.1
+robot.client.port=80
+```
+
+相信你能够看懂他们之间的关系。
+
+到这里配置就完成了，下面是java的代码。
+
+在`src/main/java`下`ctrl+N`新建包和类。你也可以新建包后直接复制下面的代码，在包上粘贴eclipse会自动新建类。
 
 启动类
 
@@ -69,10 +122,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class HelloApplication {
 	public static void main(String[] args) {
-		SpringApplication.run(HelloApplication.class, args);
+		SpringApplication.run(HelloApplication.class, ars);
 	}
 }
 ```
+
+此时，java这边已经能够正常启动，但你还没有编写任何功能。我们可以写一些监听器来完成想要的功能。
 
 监听器
 
@@ -98,11 +153,17 @@ public class HelloListener {
 }
 ```
 
-效果图：
+结构如图：
 
+![image-20200422211004391](image/README/image-20200422211004391.png)
 
+`HelloListener`可以不在`com.wymc.demo.listener`目录下，但是必须在`HelloApplication`所在包的同级或子级目录下，否则，你需要另外的配置。
 
-![img](file:///C:\Users\Administrator\AppData\Roaming\Tencent\Users\1522204732\TIM\WinTemp\RichOle\[6NN405K12IWID%K2EYEEQR.png)
+在上文中的启动类上右键run as ->java application即可启动你的机器人。
+
+![image-20200422211803870](image/README/image-20200422211803870.png)
+
+![image-20200422211958665](image/README/image-20200422211958665.png)
 
 ### 理解快速开始项目
 
@@ -110,7 +171,17 @@ public class HelloListener {
 
 #### 事件上报
 
-qq在使用过程中的接收到的信息，包括聊天消息内容、好友和加群请求、文件上传、管理员变动等统称为事件。事件会被封装为一个http POST请求，发送到`post_url`中指定的地址，称为事件上报。
+事件：是指coolq端接收到的聊天消息内容、好友请求、群管信息、文件上传等等信息。
+
+事件上报：coolq端将事件通过http或者websocket发送到配置文件中指定的地址。
+
+在前文提到的`账号.json`文件中，增加一项`"log_level": debug`的配置，可以看到事件上报的详细内容。如图：
+
+![image-20200422212525353](image/README/image-20200422212525353.png)
+
+如果你和我有一点不同也不要担心，我开启了websocket的事件上报。
+
+根据cqhttp的官方文档的说明，在`post_url`中指定的就是http的事件上报的地址。
 
 [事件上报详细内容](https://cqhttp.cc/docs/4.14/#/Post)
 
@@ -120,11 +191,11 @@ cqhttp为我们提供了一些用来主动进行消息发送、群管理、获�
 
 [cqhttp api详细内容](https://cqhttp.cc/docs/4.14/#/API)
 
-相信你已经能够理解上面的cq配置文件中的内容了，那么我们接下来进一步理解java端的配置。
-
 #### 事件服务器
 
-顾名思义，你应该很容易理解这是处理事件上报的请求的服务器。这个服务器的有关配置都在`robot.server`之下。配置如下：
+事件上报在http的情况下，相当于发送了一个http的请求，而且都是POST请求，请求体的内容就是事件。那么显而易见的，我们可以编写一个http服务器来处理这些请求，称之为事件（处理）服务器。
+
+你可以通过`robot.server`的配置来配置这个服务器。
 
 | 配置项              | 默认值  | 含义                                                     |
 | ------------------- | ------- | -------------------------------------------------------- |
@@ -133,17 +204,25 @@ cqhttp为我们提供了一些用来主动进行消息发送、群管理、获�
 
 #### 机器人客户端
 
-与事件上报对应事件服务器一样，机器人客户端对应CQHTTP接口，它提供了方便访问的接口。
+上面提到`CQHTTP`的接口，与之对应的，机器人客户端就是实现了访问这个接口的一个客户端，你可以调用里面的方法，来访问`CQHTTP`的接口。每一个机器人客户端都对应一个coolq端。
 
 所有配置都在`robot.client`之下，可以支持配置多个机器人客户端配置（连接不同的cqhttp的接口服务端）。
 
+如果你使用的是全局客户端配置，那么被注册的这个机器人客户端将交给spring容器进行管理。也就是说，你可以在任何能够使用依赖注入的地方注入`RobotClient`即可得到他。
+
 | 配置项                         | 默认值    | 含义                     |
 | ------------------------------ | --------- | ------------------------ |
+| `robot.client.host`            | 无        | 全局客户端host           |
+| `robot.client.port`            | 无        | 全局客户端端口           |
 | `robot.client.clients`         | 无        | 机器人客户端配置的列表   |
 | `robot.client.clients[i].host` | 127.0.0.1 | cqhttp接口服务端所在host |
 | `robot.client.clients[i].port` | 5700      | cqhttp接口服务端所在端口 |
 
 #### 监听器
+
+监听器：当事件被事件服务器接收到时，用来处理这个事件的方法。
+
+事件与监听器直接存在一个映射关系，不是所有的事件都会由所有的监听器来执行，你需要定制监听器在什么样的事件和其他条件下才能够执行。这称之为事件到监听器的映射。
 
 通过`@Listener`注解，我们可以定义一个监听器，有监听器的类需要`@Component`注解，以注入spring容器方便管理。事实上，如果你没有将类注入到容器，监听器是无法被加载的。
 
@@ -182,7 +261,7 @@ public enum EventType {
 }
 ```
 
-事件都实现了`Event`接口，根据事件类型总共有十一种实现类。
+所有事件都实现了`Event`接口，`Event`接口提供了所有事件的通用方法。而`MessageEvent`、`NoticeEvent`、`RequestEvent`是三种事件分类的抽象实现，提供每个分类通用方法。事件实体类总共有十一种实现类。
 
 事件实体类的命名方式是：`{类型}{分类}{Event}`的方式，比如私聊类型的消息的`message_typ`是`private`，大分类是`message`，它对应的实体类是`PrivateMessageEvent`，同理群聊消息是`GroupMessageEvent`，其他请结合CQHTTP文档。
 
@@ -221,35 +300,109 @@ public @interface Listener {
 }
 ```
 
-不再赘述
+在这里，`type`和`value`的配置效果完全一样。（基于spring的`@AliasFor`实现）
+
+而`sort`是定义这个监听器的执行优先级。因为一个事件，可能能够映射到多个监听器，这些监听器之间会存在一个顺序关系，你可以用这个方法来决定监听器执行的顺序。
+
+`isBreak`是定义这个监听器执行完成后，是否跳过优先级在这个监听器之后的监听器的执行。
 
 ### @Filter
 
-```java
+```
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Filter {
-	/**
-	 * 如果监听的消息是一个MESSAGE类型，将会通过正则进行匹配。
-	 * 其他类型不会触发这个。
+   /**
+    * 监听消息的正则数组
+    * @return 正则数组
+    */
+   @AliasFor(attribute = "value")
+   String[] regex() default ".*";
+
+   /**
+    * 同regex
+    * @return 同regex
+    */
+   @AliasFor(attribute = "regex")
+   String[] value() default ".*";
+
+   /**
+    * 群号列表
+    * @return 群号
+    */
+   long[] group() default {};
+
+   /**
+    * qq号列表
+    * @return QQ号
+    */
+   long[] qq() default {};
+
+   /**
+    * 匹配方式
+    * @return 匹配方式
+    */
+   MatchType[] matchType() default MatchType.ANY_REGEX;
+   
+   /**
+	 * 多匹配方式的处理逻辑
+	 * 
 	 * @return
 	 */
-	@AliasFor(attribute = "value")
-	String regex() default ".*";
-
-	@AliasFor(attribute = "regex")
-	String value() default ".*";
-
-	/**
-	 * 拦截器
-	 * @return
-	 */
-	Class<? extends ListenerFilter>[] filters() default {};
+	MatchTypeModel matchTypeModel() default MatchTypeModel.ANY;
+   /**
+    * 拦截器列表
+    * @return 拦截器列表
+    */
+   Class<? extends ListenerFilter>[] filters() default {};
 }
 ```
 
-其中，`filters`指定监听器执行生命周期中的拦截器，这会在拦截器一章详细说明。
+`regex`与`value`配置相同，是定义监听器映射的事件的聊天消息内容将会匹配的正则。如果一个事件不是聊天消息类型的事件，默认情况下会返回true
+
+`group`和`qq`是定义监听器映射的事件的有关群号和qq号码的待选列表。每个事件都有一个`userId`字段，`qq`将会匹配的是这个字段，但在不同的事件中，这个字段的含义有所不同。而在群内发生的事件都会有一个`groupId`字段，`group`将会匹配的是这个字段。
+
+### MatchType
+
+这是一个枚举类型，定义了多种匹配方式。支持定义多个匹配方式，但含义上明显相悖的不应该同时使用，虽然不会报错，但会导致你的监听器一直被拦截无法执行。
+
+| 实例                    | 含义                                                         |
+| ----------------------- | ------------------------------------------------------------ |
+| `ANY_REGEX`             | `regex`数组中**有任何**正则能够匹配到消息内容时通过          |
+| `NONE_REGEX`            | `regex`数组中**没有任何**正则能够匹配到消息内容时通过        |
+| `ALL_REGEX`             | `regex`数组中**所有**正则能够匹配到消息内容时通过            |
+| `INCLUDE_QQ`            | `qq`数组中**有任何**qq号码能匹配到事件中的`userId`时通过     |
+| `EXCLUDE_QQ`            | `qq`数组中**没有任何**qq号码能匹配到事件中的`userId`时通过   |
+| `INCLUDE_GROUP`         | `group`数组中**有任何**群号码能匹配到事件中的`groupId`时通过，如果是没有这个字段的事件，则不通过 |
+| `EXCLUDE_GROUP`         | `group`数组中**没有任何**群号码能匹配到事件中的`groupId`时通过，如果是没有这个字段的事件，则通过 |
+| `CONTAIN_AT`            | 消息内容中包含@时通过                                        |
+| `CONTAIN_AT_SELF`       | 消息内容中包含@机器人时通过                                  |
+| `CONTAIN_AT_QQ`         | `qq`数组中**有任何**qq匹配到被@的qq号码时通过                |
+| `ANY_REGEX_EXCLUDE_CQ`  | `regex`数组中**有任何**正则匹配到移除cq码后的消息内容时通过  |
+| `ALL_REGEX_EXCLUDE_CQ`  | `regex`数组中**所有**正则匹配到移除cq码后的消息内容时通过    |
+| `NONE_REGEX_EXCLUDE_CQ` | `regex`数组中**没有任何**正则匹配到移除cq码后的消息内容时通过 |
+| `ONLY_IMAGE`            | 接收到的消息**只有**图片                                     |
+
+#### 多匹配模式
+
+上面的`MatchType`定义了一些能够简化开发的匹配模式，但他们之间的组合依然不够灵活，于是我定义了一个用来组合多种`MatchType`的枚举类。
+
+| 枚举                  | 含义                    |
+| --------------------- | ----------------------- |
+| `MatchTypeModel.ANY`  | 任何一个`MatchType`通过 |
+| `MatchTypeModel.NONE` | 没有任何`MatchType`通过 |
+| `MatchTypeModel.ALL`  | 所有`MatchType`通过     |
+
+## CQ码
+
+`cq码`是coolq官方定义的一种具有特殊功能的代码。[coolq官方文档](https://docs.cqp.im/manual/cqcode/)
+
+cqhttp对其进行了一定程度的增强。[文档。](https://cqhttp.cc/docs/4.15/#/CQCode)
+
+通过这种代码，你可以实现发送图片、语音、表情、及其他特殊功能。
+
+在框架内，`CQ码`对应的实现类是`CQCode`，其中包含了获取各种不同功能的`CQCode`的方法，以及从消息中获取`CQCode`的方法等等。
 
 ## 事件处理流程
 
@@ -304,42 +457,223 @@ public interface ListenerFilter {
 	 * @return
 	 */
 	boolean apply(Event event, ListenerContext context, Object... args);
+	/**
+	 *
+	 * @return 越大优先级越低
+	 */
+	default int order() {
+		return Integer.MIN_VALUE;
+	}
 }
 ```
 
 其中，`ListenerContext`是一个包含了监听器详细信息的上下文对象。
 
+现在，拦截器也存在优先级，你可以通过重写`order`返回的值来定制拦截器执行的优先级。
+
 ### MappingFilter
 
-首先要由`EventType`和正则来决定是否映射监听器，然后通过这个拦截器决定是否拦截。
-
-你可以实现它，来完成一些复杂的事件与监听器的映射规则。
+这个拦截器定义从事件到监听器的映射，也就是说，当一个监听器监听的事件发生时，是否将这个事件交给监听器处理。目前，这个监听器中的`args`参数依然为空。
 
 ### PreFilter
 
-当得到事件映射的监听器序列后，执行前的拦截器。这个拦截器在参数注入之后，实现这个接口，你可以根据注入参数来决定是否执行监听器，如果不需要这样的逻辑，推荐使用`MappingFilter`
+当得到事件映射的监听器序列后，执行前的拦截器。这个拦截器在参数注入之后，他的`args`参数是监听器的参数列表中的参数，定义这个拦截器，你可以决定是否执行监听器。
 
 ### PostFilter
 
-聊胜于无的组件，也许你可以使用它来完成日志处理
+监听器执行完成后的拦截器，他的`args[0]`是执行完成的结果，你可以定制他来决定是否在监听器执行完成后，处理剩余的逻辑，目前，后置拦截器的后续只有结果处理和跳过后续监听器的执行。
 
 ### @GlobalFilter
 
-这是一个标记性的注解，没有参数，这个注解可以将一个拦截器设定为全局，前面的接口都需要实现后，再由`@Filter`注解引入，但如果你想要所有监听器都能直接使用一个拦截器，你只需要在类上加上这样一个注解即可。但请注意，对于同一个接口类型，都将只有一个全局拦截器生效，如果你指定多个同类型的全局拦截器没有任何意义。
+这是一个标记性的注解，没有参数，这个注解可以将一个拦截器设定为全局，在所有监听器执行时都生效。
+
+框架内默认存在一个`RootMappingFilter`，它是我定义用来实现前面`@Filter`的其他参数功能的全局拦截器，他是最高优先级的拦截器。
+
+## 自定义事件处理器
+
+框架内定义了一个`RobotServerEventProcessor`的接口，api如下：
+
+```java
+public interface RobotServerEventProcessor {
+    /**
+     * 解析msg
+     *
+     * @param msg 读事件发生时的消息内容
+     * @return 事件
+     */
+    Event resolveEvent(Object msg);
+
+    /**
+     * 进行默认响应
+     */
+    default void defaultRespond(ChannelHandlerContext ctx){}
+
+    /**
+     * 通过事件 映射到可以执行的该事件的监听器
+     *
+     * @param event 事件
+     * @return 事件所映射的监听器集合
+     */
+    Set<ListenerContext> mapping(Event event, Set<MappingFilter> globalMappingFilters);
+
+    /**
+     * 参数注入
+     *
+     * @param context 监听器上下文
+     * @param event   事件
+     */
+    Object[] paramInject(ListenerContext context, Event event);
+
+    /**
+     * @param context       监听上下文
+     * @param event         事件
+     * @param globalFilters 全局拦截器
+     * @return 是否放行
+     */
+    boolean preFilter(ListenerContext context, Event event, Object[] params, Set<PreFilter> globalFilters);
+
+    /**
+     * 执行监听器
+     *
+     * @param context 监听器上下文
+     * @param event   事件
+     */
+    Object doHandler(ListenerContext context, Event event, Object... params)
+            throws Exception;
+
+    /**
+     * 后置拦截
+     *
+     * @param context 监听器上下文
+     * @param event   事件
+     * @return 是否拦截后续逻辑
+     */
+    boolean postFilter(ListenerContext context, Event event, Object result, Set<PostFilter> globalPostFilters);
+    
+    /**
+     * 结果处理
+     *
+     * @param context 监听器上下文
+     * @param channel 此次事件中读写用的通道
+     * @return 是否用通道写回了结果
+     */
+    boolean resultHandler(ListenerContext context, Object result, Channel channel) ;
+}
+```
+
+这个接口中，除了`resolveEvent`都具有默认实现。
+
+`defaultRespond`是对事件进行默认的响应的方法，在框架内的默认实现中，对于http事件服务器才会进行响应，websocket会跳过该方法。
+
+你可以实现这个接口，然后通过`@Component`注解将一个实现类注入到容器内，默认的事件处理器就不会再生效。
+
+**你需要对事件处理的逻辑具有非常充分的了解才应该自定义事件处理器**
+
+## WebSocket
+
+简而言之，通过`robot.server.use-ws=true`配置以及`robot.client.use-ws`配置，你可以不再使用http而是websocket来处理事件和访问api，当然这也需要cqhttp的配置。
+
+```json
+{
+    "use_ws": true,
+    "ws_port": 6700
+}
+```
+
+| 配置项                                  | 默认值    | 含义                                |
+| --------------------------------------- | --------- | ----------------------------------- |
+| `robot.server.use-ws`                   | false     | 对于事件处理是否启用websocket       |
+| `robot.server.use-default-http-reject`  | true      | 如果开启websocket，是否使用http拒绝 |
+| `robot.server.default-http-reject-host` | 127.0.0.1 | http拒绝服务器的host                |
+| `robot.server.default-httpreject-port`  | 80        | http拒绝服务器的port                |
+| `robot.client.use-ws`                   | false     | 对于机器人客户端是否启用websocket   |
+| `robot.client.clients[i].use-ws`        | false     | 对于单个机器人客户端是否启          |
+
+当机器人客户端使用`use-ws`时，使用的port要与`ws_port`对应。
+
+**http拒绝**
+
+cqhttp只有在`post_url`配置格式错误或者不存在的情况下，才不会使用http来进行事件上传。如果`post_url`存在且格式正确，但请求的http服务器不存在，这将会导致几百毫秒的延迟，然后他才会进行websocket的事件上报。考虑到1.cqhttp的配置相对更为麻烦，只管理一端的配置更为合理；2.有可能你需要同时开启http的事件上报和websocket的；所以，为了更快的响应，通过配置一个http拒绝服务器，当开启websocket的时候对http事件上报进行拒绝（返回空响应），让cqhttp快速的进行websocket事件上报。
 
 ## 常见类
 
 ### ListenerContext
 
-监听上下文对象。
+这是一个监听器的详细定义信息。
 
-保存着包含：监听器所属类和类对象、监听器方法对象、参数对象、正则、监听类型、拦截器、执行结果等等详细信息，它在事件的处理流程中广泛存在。
+这个类的所有方法除了`AttributeMap`接口的方法以外的都是`getter`。
+
+这个类实现了`AttributeMap`，你可以通过`attr(AttrubuteKey<T> key)`来设置在这个`ListenerContext`对象所对应的监听器在执行的不同阶段、或者是在不同的触发中传递一些数据。
+
+```java
+/**
+ * 执行的方法
+ */
+private Method method;
+/**
+ * 所属类
+ */
+private Class<?> clz;
+/**
+ * 参数
+ */
+private Object[] params;
+/**
+ * 监听类型
+ */
+private int listenType;
+/**
+ * 执行优先级
+ */
+private int sort;
+/**
+ * 正则匹配
+ */
+private String[] regex;
+/**
+ * {@link com.github.guigumua.robot.starter.annotation.Filter}注解上的qq
+ */
+private long[] qq;
+/**
+ * {@link com.github.guigumua.robot.starter.annotation.Filter}注解上的group
+ */
+private long[] group;
+/**
+ * 匹配拦截器列表
+ */
+private ArrayList<MappingFilter> mappingFilters = new ArrayList<>();
+/**
+ * 前置拦截器列表
+ */
+private ArrayList<PreFilter> preFilters = new ArrayList<>();
+/**
+ * 后置拦截器列表
+ */
+private ArrayList<PostFilter> postFilters = new ArrayList<>();
+/**
+ * 阻断
+ */
+private boolean isBreak;
+
+/**
+ * 调用对象
+ */
+private Object invokeObj;
+/**
+ * 调用时才能注入的参数
+ */
+private Map<Integer, Parameter> paramsMap = new HashMap<>();
+/**
+ * 匹配的方式
+ */
+private MatchType[] matchTypes;
+```
 
 ### RobotClient
 
 这是框架提供的一个用于访问cqhttp api的类。在cqhttp api中定义的接口都可以访问。
 
-其中以`get`和`_get`开头的所有api都是同步的，其他api都是默认异步，你可以通过`setAsync(false)`来设置为同步（但是不推荐），在默认情况下，这些api的返回值都是null，如果你设置为同步，他们将返回响应对象，在你需要响应来完成逻辑的时候可以使用。注意，调用`setAsync(false)`后，同一个coolq端的事件再次被响应时，它的值依然是`false`，所以如果不再需要同步的情况下请再调用`setAsync(false)`。
+其中以`get`和`_get`开头的所有api都是同步的，其他api都是默认异步，你可以通过`setAsync(false)`来设置为同步（但是不推荐），在默认情况下，这些api的返回值都是null，如果你设置为同步，他们将返回响应对象，在你需要响应来完成逻辑的时候可以使用。注意，调用`setAsync(false)`后，同一个coolq端的事件再次被响应时，它的值依然是`false`，所以如果不再需要同步的情况下请再调用`setAsync(true)`。
 
 ```java
 /**
@@ -838,16 +1172,7 @@ _SendGroupNoticeRequest.Response _sendGroupNotice(long groupId, String title, St
 	 * @param lon     纬度
 	 * @return
 	 */
-	public static CQCode getLocation(String content, String title, double lat, double lon) {
-		CQCode code = new CQCode();
-		code.setType("CQ:location");
-		code.put("content", content);
-		code.put("title", title);
-		code.put("lat", String.valueOf(lat));
-		code.put("lon", String.valueOf(lon));
-		code.put("style", String.valueOf(1));
-		return code;
-	}
+	public static CQCode getLocation(String content, String title, double lat, double lon);
 
 	/**
 	 * 音乐分享
@@ -881,29 +1206,30 @@ _SendGroupNoticeRequest.Response _sendGroupNotice(long groupId, String title, St
 	public static CQCode getShare(String url, String title, String content, String image);
 ```
 
-## WebSocket
+### JsonUtil
 
-简而言之，通过`robot.server.use-ws=true`配置以及`robot.client.use-ws`配置，你可以不再使用http而是websocket来处理事件和访问api，当然这也需要cqhttp的配置。
+用于处理Json的类。
 
-```json
-{
-    "use_ws": true,
-    "ws_port": 6700
-}
+```java
+public static String toJSON(Object object);
+/** Object TO Json String Json-lib兼容的日期输出格式 */
+public static String toJSONLib(Object object);
+/** 转换为数组 Object */
+public static Object[] toArray;
+/** 转换为数组 （可指定类型） */
+public static <T> Object[] toArray;
+/** Json 转为 Jave Bean */
+public static <T> T toBean;
+/** Json 转为 Map */
+public static Map<?, ?> toMap(String json);
+/** Json 转 List,Class 集合中泛型的类型，非集合本身，可json-lib兼容的日期格式 */
+public static <T> List<T> toList;
+/** 从json字符串获取指定key的字符串 */
+public static Object getValueFromJson;
 ```
 
-| 配置项                                  | 默认值    | 含义                                |
-| --------------------------------------- | --------- | ----------------------------------- |
-| `robot.server.use-ws`                   | false     | 对于事件处理是否启用websocket       |
-| `robot.server.use-default-http-reject`  | true      | 如果开启websocket，是否使用http拒绝 |
-| `robot.server.default-http-reject-host` | 127.0.0.1 | http拒绝服务器的host                |
-| `robot.server.default-httpreject-port`  | 80        | http拒绝服务器的port                |
-| `robot.client.use-ws`                   | false     | 对于机器人客户端是否启用websocket   |
-| `robot.client.clients[i].use-ws`        | false     | 对于单个机器人客户端是否启          |
+### HttpRequest
 
-当机器人客户端使用`use-ws`时，使用的port要与`ws_port`对应。
+一个从dalao那里拿来用的类。详细的内容你可以看源码，因为api过多这里不赘述。
 
-**http拒绝**
-
-cqhttp只有在`post_url`配置格式错误或者不存在的情况下，才不会使用http来进行事件上传。如果`post_url`存在且格式正确，但请求的http服务器不存在，这将会导致几百毫秒的延迟，然后他才会进行websocket的事件上报。考虑到1.cqhttp的配置相对更为麻烦，只管理一端的配置更为合理；2.有可能你需要同时开启http的事件上报和websocket的；所以，为了更快的响应，通过配置一个http拒绝服务器，当开启websocket的时候对http事件上报进行拒绝（返回空响应），让cqhttp快速的进行websocket事件上报。
-
+> Copyright (c) 2014 Kevin Sawicki <kevinsawicki@gmail.com>

@@ -14,10 +14,18 @@ mvn install
 
 > 更新日志
 >
+> 1.0.1-RELEASE
+>
+> - 为@Filter新增了一个matchTypeModel的参数
+> - 现在RobotClient可以直接获取自己的qq号码了
+> - 现在你可以配置一个全局RobotClient，由spring容器进行管理
+> - 修复了上版本http的事件服务器解析事件返回null的bug
+> - 为CQCode新增了一个removeAllCQ的方法
+>
 > 1.0.0-RELEASE
 >
 >  - 现在全局拦截器可以定制多个了
-> 
+>
 >  - 支持自定义的事件处理流程
 >
 >  - 对拦截器的参数定义做了细微调整
@@ -28,6 +36,9 @@ mvn install
 >
 >  - 事件服务器的结构进行了优化
 >
-> 0.0.2-SNAPSHOT:修复了getCQCodes只能获取一个CQCode的bug,略微调整了一部分代码 2020-04-18 17:21
+> 0.0.2-SNAPSHOT: 2020-04-18 17:21
+>
+> - 修复了getCQCodes只能获取一个CQCode的bug
+> - 略微调整了一部分代码
 >
 > 0.0.1-RELEASE:发布第一个版本

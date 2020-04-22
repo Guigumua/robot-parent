@@ -89,23 +89,15 @@ import com.github.guigumua.robot.common.request.ws._GetGroupNoticeWsRequest;
 import com.github.guigumua.robot.common.request.ws._GetVipInfoWsRequest;
 import com.github.guigumua.robot.common.request.ws._SendGroupNoticeWsRequest;
 import com.github.guigumua.robot.common.util.JsonUtil;
-import com.github.guigumua.robot.starter.client.RobotClient;
+import com.github.guigumua.robot.starter.client.AbstractRobotClient;
 
-import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
@@ -118,60 +110,38 @@ import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
 
-public class RobotWebSocketClient implements RobotClient {
+public class RobotWebSocketClient extends AbstractRobotClient {
 	private static final Logger logger = LoggerFactory.getLogger(RobotWebSocketClient.class);
-	private final NioEventLoopGroup group = new NioEventLoopGroup();
-	private final Bootstrap bootstrap = new Bootstrap();
-	private final String host;
-	private final int port;
-	private long selfId;
-	private WebSocketClientHandshaker handShaker;
-	private ChannelPromise handshakeFuture;
 	private Channel channel;
-	private boolean async = true;
 	private URI uri;
 
 	public RobotWebSocketClient(String host, int port) {
-		ChannelInitializer<SocketChannel> pipeline = new RobotWebSocketClientPipeline();
-		bootstrap.group(group).channel(NioSocketChannel.class).handler(pipeline);
-		this.host = host;
-		this.port = port;
-		connect();
+		super(host, port, new RobotWebSocketClientHandler());
+		init();
+		GetLoginInfoRequest.ResponseData loginInfo = getLoginInfo();
+		long userId = loginInfo.getUserId();
+		this.selfId = userId;
 	}
 
-	@Override
-	public long getSelfId() {
-		return selfId;
-	}
-
-	public boolean isAsync() {
-		return async;
-	}
-
-	public void setAsync(boolean async) {
-		this.async = async;
-	}
-
-	private void connect() {
+	private void init() {
 		try {
 			HttpHeaders httpHeaders = new DefaultHttpHeaders();
 			this.uri = new URI("ws://" + host + ":" + port + "/api");
 			// 进行握手
 			WebSocketClientHandshaker handShaker = WebSocketClientHandshakerFactory.newHandshaker(uri,
-					WebSocketVersion.V13, (String) null, true, httpHeaders);
+					WebSocketVersion.V13, null, true, httpHeaders);
 			// 需要协议的host和port
 			Channel channel = bootstrap.connect(uri.getHost(), uri.getPort()).sync().channel();
-			this.handShaker = handShaker;
+			RobotWebSocketClientHandler handler = (RobotWebSocketClientHandler) getHandler();
+			handler.setHandShaker(handShaker);
+			handler.setUri(uri);
 			handShaker.handshake(channel);
+			handler.handshakeFuture.sync();
 			Thread.sleep(1000);
-			this.handshakeFuture.sync();
+			this.channel = handler.getChannel();
 		} catch (URISyntaxException | InterruptedException e) {
 			e.printStackTrace();
 		}
-	}
-
-	public void setSelfId(long selfId) {
-		this.selfId = selfId;
 	}
 
 	@Override
@@ -197,7 +167,6 @@ public class RobotWebSocketClient implements RobotClient {
 		}
 		return request.getResponse();
 	}
-
 
 	@Override
 	public SendMsgRequest.Response sendMsg(MessageEvent e, String message) {
@@ -538,7 +507,6 @@ public class RobotWebSocketClient implements RobotClient {
 	}
 
 	private volatile int i = 0;
-	private volatile int j = 0;
 
 	public void requestAsync(CoolQWebSocketRequest request) {
 		AttributeKey<CoolQWebSocketRequest> key = AttributeKey.valueOf(String.valueOf(i++));
@@ -564,22 +532,30 @@ public class RobotWebSocketClient implements RobotClient {
 		return request.getResponse();
 	}
 
-	private class RobotWebSocketClientPipeline extends ChannelInitializer<SocketChannel> {
+	private static class RobotWebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
+		private ChannelPromise handshakeFuture;
+		private Channel channel;
+		private WebSocketClientHandshaker handShaker;
+		private URI uri;
+		private volatile int j = 0;
 
-		@Override
-		protected void initChannel(SocketChannel ch) {
-			ChannelPipeline p = ch.pipeline();
-			p.addLast(new HttpClientCodec(), new HttpObjectAggregator(1 << 20));
-			p.addLast("handler", new RobotWebSocketClientHandler());
+		public Channel getChannel() {
+			return channel;
 		}
-	}
 
-	private class RobotWebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
+		public void setHandShaker(WebSocketClientHandshaker handShaker) {
+			this.handShaker = handShaker;
+		}
+
+		public void setUri(URI uri) {
+			this.uri = uri;
+		}
 
 		@Override
-		public void channelRegistered(ChannelHandlerContext ctx) {
-			handshakeFuture = ctx.newPromise();
-			channel = ctx.channel();
+		public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+			this.handshakeFuture = ctx.newPromise();
+			this.channel = ctx.channel();
+			super.channelRegistered(ctx);
 		}
 
 		@Override
@@ -636,4 +612,5 @@ public class RobotWebSocketClient implements RobotClient {
 		}
 
 	}
+
 }

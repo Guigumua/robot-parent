@@ -1,16 +1,17 @@
-package com.github.guigumua.robot.starter.configuration;
+package com.github.guigumua.robot.starter.client;
 
 import java.util.List;
 
-import com.github.guigumua.robot.starter.client.RobotManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.github.guigumua.robot.starter.server.properties.RobotAutoConfigurationProperties;
+import com.github.guigumua.robot.starter.server.properties.RobotAutoConfigurationProperties.RobotClientProperties;
 import com.github.guigumua.robot.starter.server.properties.RobotAutoConfigurationProperties.RobotClientProperties.Client;
 
 /**
@@ -25,6 +26,8 @@ public class RobotClientAutoConfiguration {
 	private Logger logger = LoggerFactory.getLogger(RobotClientAutoConfiguration.class);
 	@Autowired
 	private RobotAutoConfigurationProperties properties;
+	@Autowired
+	private ConfigurableApplicationContext context;
 
 	@Bean
 	public RobotManager robotManager() {
@@ -34,6 +37,13 @@ public class RobotClientAutoConfiguration {
 	@Bean
 	public void configureManager() {
 		RobotManager robotManager = RobotManager.getInstance();
+		RobotClientProperties clientProperties = properties.getClient();
+		String host = clientProperties.getHost();
+		if (host != null) {
+			int port = clientProperties.getPort();
+			RobotClient client = robotManager.registerRobotClient(host, port, clientProperties.isUseWs());
+			context.getBeanFactory().registerSingleton("globalClient", client);
+		}
 		List<Client> clients = properties.getClient().getClients();
 		boolean useWs = properties.getClient().isUseWs();
 		for (Client client : clients) {

@@ -5,7 +5,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.netty.handler.codec.http.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,30 +89,24 @@ import com.github.guigumua.robot.common.request.http._GetGroupNoticeHttpRequest;
 import com.github.guigumua.robot.common.request.http._GetVipInfoHttpRequest;
 import com.github.guigumua.robot.common.request.http._SendGroupNoticeHttpRequest;
 import com.github.guigumua.robot.common.util.JsonUtil;
-import com.github.guigumua.robot.starter.client.RobotClient;
+import com.github.guigumua.robot.starter.client.AbstractRobotClient;
 
-import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ConnectTimeoutException;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
 
-public class RobotHttpClient implements RobotClient {
-	private static final Logger logger = LoggerFactory.getLogger(RobotHttpClient.class);
-	private final NioEventLoopGroup group = new NioEventLoopGroup();
-	private final Bootstrap bootstrap = new Bootstrap();
-	private final String host;
-	private final int port;
-	private boolean async = true;
-	private long selfId;
+public class RobotHttpClient extends AbstractRobotClient {
+
 	/**
 	 * 连接失败重连次数
 	 */
@@ -121,17 +114,18 @@ public class RobotHttpClient implements RobotClient {
 	/**
 	 * 重连滞后时间，单位毫秒 eg:设定为5000，第一次重连在5秒后，第二次重连在10秒后，第三次重连在20秒后。
 	 */
-	private int reconnectDelayTime = 5000;
+	private int reconnectDelayTime = 2000;
 	/**
 	 * 响应超时时间
 	 */
 	private int maxRespondTime = 10000;
 
 	public RobotHttpClient(String host, int port) {
-		ChannelInitializer<SocketChannel> pipeline = new RobotHttpClientPipeline();
-		bootstrap.group(group).channel(NioSocketChannel.class).handler(pipeline);
-		this.host = host;
-		this.port = port;
+		super(host, port, new RobotHttpClientHandler());
+		RobotHttpClientHandler handler = (RobotHttpClientHandler) this.getHandler();
+		handler.setRequestQueue(requestQueue);
+		GetLoginInfoRequest.ResponseData loginInfo = getLoginInfo();
+		this.selfId = loginInfo.getUserId();
 	}
 
 	public int getReconnectDelayTime() {
@@ -163,34 +157,8 @@ public class RobotHttpClient implements RobotClient {
 		return false;
 	}
 
-	@Override
-	public String getHost() {
-		return host;
-	}
-
-	@Override
-	public int getPort() {
-		return port;
-	}
-
-	public boolean isAsync() {
-		return async;
-	}
-
-	public void setAsync(boolean async) {
-		this.async = async;
-	}
-
-	public void setSelfId(long selfId) {
-		this.selfId = selfId;
-	}
-
-	@Override
-	public long getSelfId() {
-		return selfId;
-	}
-
 	private final AtomicInteger times = new AtomicInteger(0);
+
 	private void connect() {
 		ChannelFuture future = bootstrap.connect(host, port);
 		future.addListener((ChannelFuture f) -> {
@@ -208,11 +176,6 @@ public class RobotHttpClient implements RobotClient {
 			}
 		});
 	}
-
-	/**
-	 * 请求任务队列
-	 */
-	private final ConcurrentLinkedQueue<CoolQHttpRequest> requestQueue = new ConcurrentLinkedQueue<>();
 
 	private CoolQHttpRequest.Response<?> send0(CoolQHttpRequest request) {
 		if (async) {
@@ -235,7 +198,6 @@ public class RobotHttpClient implements RobotClient {
 		return null;
 	}
 
-
 	public SendMsgRequest.Response sendPrivateMsg(long userId, String message) {
 		SendMsgHttpRequest request = new SendMsgHttpRequest();
 		request.setMessageType(SendMsgRequest.PRIVATE_TYPE);
@@ -244,7 +206,6 @@ public class RobotHttpClient implements RobotClient {
 		return (SendMsgRequest.Response) send0(request);
 	}
 
-
 	public SendMsgRequest.Response sendGroupMsg(long groupId, String message) {
 		SendMsgHttpRequest request = new SendMsgHttpRequest();
 		request.setMessageType(SendMsgHttpRequest.GROUP_TYPE);
@@ -252,7 +213,6 @@ public class RobotHttpClient implements RobotClient {
 		request.setMessage(message);
 		return (SendMsgRequest.Response) send0(request);
 	}
-
 
 	public void sendGroupAndDelete(long groupId, String message, int delay, TimeUnit unit) {
 		SendMsgHttpRequest request = new SendMsgHttpRequest();
@@ -267,7 +227,6 @@ public class RobotHttpClient implements RobotClient {
 		}, delay, unit);
 	}
 
-
 	public SendMsgRequest.Response sendDiscussMsg(long discussId, String message) {
 		SendMsgHttpRequest request = new SendMsgHttpRequest();
 		request.setMessageType(SendMsgRequest.DISCUSS_TYPE);
@@ -276,7 +235,6 @@ public class RobotHttpClient implements RobotClient {
 		this.requestAsync(request);
 		return (SendMsgRequest.Response) send0(request);
 	}
-
 
 	public SendLikeRequest.Response sendLike(long userId, int times) {
 		SendLikeHttpRequest request = new SendLikeHttpRequest();
@@ -290,6 +248,7 @@ public class RobotHttpClient implements RobotClient {
 		request.setMessageId(messageId);
 		return (DeleteMsgRequest.Response) send0(request);
 	}
+
 	public SetGroupKickRequest.Response groupKick(long groupId, long userId) {
 		return setGroupKick(groupId, userId, false);
 	}
@@ -355,7 +314,6 @@ public class RobotHttpClient implements RobotClient {
 		return (SetGroupAnonymousRequest.Response) send0(request);
 	}
 
-
 	public SetGroupCardRequest.Response setGroupCard(long groupId, long userId, String card) {
 		SetGroupCardHttpRequest request = new SetGroupCardHttpRequest();
 		request.setCard(card);
@@ -364,14 +322,12 @@ public class RobotHttpClient implements RobotClient {
 		return (SetGroupCardRequest.Response) send0(request);
 	}
 
-
 	public SetGroupLeaveRequest.Response setGroupLeave(long groupId, boolean isDismiss) {
 		SetGroupLeaveHttpRequest request = new SetGroupLeaveHttpRequest();
 		request.setDismiss(isDismiss);
 		request.setGroupId(groupId);
 		return (SetGroupLeaveRequest.Response) send0(request);
 	}
-
 
 	public SetGroupSpecialTitleRequest.Response setGroupSpecialTitle(long groupId, long userId, String specialTitle) {
 		SetGroupSpecialTitleHttpRequest request = new SetGroupSpecialTitleHttpRequest();
@@ -382,13 +338,11 @@ public class RobotHttpClient implements RobotClient {
 		return (SetGroupSpecialTitleRequest.Response) send0(request);
 	}
 
-
 	public SetDiscussLeaveRequest.Response setDiscussLeave(long discussId) {
 		SetDiscussLeaveHttpRequest request = new SetDiscussLeaveHttpRequest();
 		request.setDiscussId(discussId);
 		return (SetDiscussLeaveRequest.Response) send0(request);
 	}
-
 
 	public SetFriendAddRequestRequest.Response setFriendAddRequest(String flag, boolean approve, String remark) {
 		SetFriendAddRequestHttpRequest request = new SetFriendAddRequestHttpRequest();
@@ -397,7 +351,6 @@ public class RobotHttpClient implements RobotClient {
 		request.setRemark(remark);
 		return (SetFriendAddRequestRequest.Response) send0(request);
 	}
-
 
 	public SetFriendAddRequestRequest.Response setFriendAddRequest(FriendAddNoticeEvent e, boolean approve,
 			String remark) {
@@ -432,23 +385,19 @@ public class RobotHttpClient implements RobotClient {
 		return ((GetStrangerInfoRequest.Response) this.request(request)).getData();
 	}
 
-
 	public List<GetFriendListRequest.ResponseData> getFriendList() {
 		return ((GetFriendListRequest.Response) this.request(new GetFriendListHttpRequest())).getData();
 	}
 
-
 	public List<GetGroupListRequest.ResponseData> getGroupList() {
 		return ((GetGroupListRequest.Response) this.request(new GetGroupListHttpRequest())).getData();
 	}
-
 
 	public GetGroupInfoRequest.ResponseData getGroupInfo(long groupId) {
 		GetGroupInfoHttpRequest request = new GetGroupInfoHttpRequest();
 		request.setGroupId(groupId);
 		return ((GetGroupInfoRequest.Response) this.request(request)).getData();
 	}
-
 
 	public GetGroupMemberInfoRequest.ResponseData getGroupMemberInfo(long groupId, long userId) {
 		GetGroupMemberInfoHttpRequest request = new GetGroupMemberInfoHttpRequest();
@@ -463,23 +412,19 @@ public class RobotHttpClient implements RobotClient {
 		return ((GetGroupMemberListRequest.Response) this.request(request)).getData();
 	}
 
-
 	public String getCookies(String domain) {
 		GetCookiesHttpRequest request = new GetCookiesHttpRequest();
 		request.setDomain(domain);
 		return ((GetCookiesRequest.Response) this.request(request)).getData().getCookies();
 	}
 
-
 	public int getCrsfToken() {
 		return ((GetCrsfTokenRequest.Response) this.request(new GetCrsfTokenHttpRequest())).getData().getToken();
 	}
 
-
 	public GetCredentialsRequest.ResponseData getCredentials(String domain) {
 		return ((GetCredentialsRequest.Response) this.request(new GetCredentialsHttpRequest())).getData();
 	}
-
 
 	public String getRecord(String file, String outFormat, boolean fullPath) {
 		GetRecordHttpRequest request = new GetRecordHttpRequest();
@@ -489,23 +434,19 @@ public class RobotHttpClient implements RobotClient {
 		return ((GetRecordRequest.Response) this.request(request)).getData().getFile();
 	}
 
-
 	public GetImageRequest.Response getImage(String file) {
 		GetImageHttpRequest request = new GetImageHttpRequest();
 		request.setFile(file);
 		return (GetImageRequest.Response) this.request(request);
 	}
 
-
 	public boolean canSendImage() {
 		return ((CanSendImageRequest.Response) this.request(new CanSendImageHttpRequest())).getData().isYes();
 	}
 
-
 	public boolean canSendRecord() {
 		return ((CanSendRecordRequest.Response) this.request(new CanSendRecordHttpRequest())).getData().isYes();
 	}
-
 
 	public List<_GetFriendListRequset.ResponseData> _getFriendList() {
 		_GetFriendListHttpRequest request = new _GetFriendListHttpRequest();
@@ -513,13 +454,11 @@ public class RobotHttpClient implements RobotClient {
 		return ((_GetFriendListRequset.Response) this.request(request)).getData();
 	}
 
-
 	public FlatResponseData _getFlatFriendList() {
 		_GetFriendListHttpRequest request = new _GetFriendListHttpRequest();
 		request.setFlat(true);
 		return ((_GetFriendListRequset.FlatResponse) this.request(request)).getData();
 	}
-
 
 	public _GetGroupInfoRequest.ResponseData _getGroupInfo(long groupId) {
 		_GetGroupInfoHttpRequest request = new _GetGroupInfoHttpRequest();
@@ -527,20 +466,17 @@ public class RobotHttpClient implements RobotClient {
 		return ((_GetGroupInfoRequest.Response) this.request(request)).getData();
 	}
 
-
 	public _GetVipInfoRequest.ResponseData _getVipInfo(long userId) {
 		_GetVipInfoHttpRequest request = new _GetVipInfoHttpRequest();
 		request.setUserId(userId);
 		return ((_GetVipInfoRequest.Response) request(request)).getData();
 	}
 
-
 	public List<_GetGroupNoticeRequest.ResponseData> _getGroupNotice(long groupId) {
 		_GetGroupNoticeHttpRequest request = new _GetGroupNoticeHttpRequest();
 		request.setGroupId(groupId);
 		return ((_GetGroupNoticeRequest.Response) request(request)).getData();
 	}
-
 
 	public _SendGroupNoticeRequest.Response _sendGroupNotice(long groupId, String title, String content) {
 		_SendGroupNoticeHttpRequest request = new _SendGroupNoticeHttpRequest();
@@ -554,6 +490,11 @@ public class RobotHttpClient implements RobotClient {
 	 * 传递request的key
 	 */
 	private static final AttributeKey<CoolQHttpRequest> REQUEST_KEY = AttributeKey.newInstance("key");
+
+	/**
+	 * 请求任务队列
+	 */
+	protected final ConcurrentLinkedQueue<CoolQHttpRequest> requestQueue = new ConcurrentLinkedQueue<>();
 
 	public void requestAsync(CoolQHttpRequest request) {
 		requestQueue.offer(request);
@@ -577,17 +518,18 @@ public class RobotHttpClient implements RobotClient {
 		return request.getResponse();
 	}
 
-	private class RobotHttpClientPipeline extends ChannelInitializer<SocketChannel> {
-		@Override
-		protected void initChannel(SocketChannel ch) {
-			ChannelPipeline p = ch.pipeline();
-			p.addLast(new HttpClientCodec());
-			p.addLast(new HttpObjectAggregator(1 << 22));
-			p.addLast(new RobotHttpClientHandler());
-		}
-	}
+	@Sharable
+	private static class RobotHttpClientHandler extends SimpleChannelInboundHandler<FullHttpResponse> {
 
-	private class RobotHttpClientHandler extends SimpleChannelInboundHandler<FullHttpResponse> {
+		/**
+		 * 请求任务队列
+		 */
+		private ConcurrentLinkedQueue<CoolQHttpRequest> requestQueue;
+		private static final Logger logger = LoggerFactory.getLogger(RobotHttpClientHandler.class);
+
+		private void setRequestQueue(ConcurrentLinkedQueue<CoolQHttpRequest> requestQueue) {
+			this.requestQueue = requestQueue;
+		}
 
 		@Override
 		public void channelActive(ChannelHandlerContext ctx) {
@@ -641,7 +583,8 @@ public class RobotHttpClient implements RobotClient {
 
 		@Override
 		public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-			ctx.writeAndFlush(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,HttpResponseStatus.INTERNAL_SERVER_ERROR));
+			ctx.writeAndFlush(
+					new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR));
 			cause.printStackTrace();
 		}
 	}
