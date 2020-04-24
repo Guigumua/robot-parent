@@ -53,7 +53,7 @@ CQHttp配置，打开coolq安装路径下的`data\app\io.github.richardchien.coo
 
 新建一个maven项目
 
-![image-20200422204802160](image/README/image-20200422204802160.png)
+<img src="image/README/image-20200422204802160.png"/>
 
 勾选创建简单项目
 
