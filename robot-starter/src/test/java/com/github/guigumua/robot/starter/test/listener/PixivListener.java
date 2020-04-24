@@ -57,7 +57,6 @@ public class PixivListener {
 				String msg = String.format("链接：%s\n标题：%s\npid：%s\n上传者：%s", _url, title, pid, member);
 				client.sendMsg(e, msg);
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		});

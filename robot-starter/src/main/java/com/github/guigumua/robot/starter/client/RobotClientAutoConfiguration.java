@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -26,8 +25,6 @@ public class RobotClientAutoConfiguration {
 	private Logger logger = LoggerFactory.getLogger(RobotClientAutoConfiguration.class);
 	@Autowired
 	private RobotAutoConfigurationProperties properties;
-	@Autowired
-	private ConfigurableApplicationContext context;
 
 	@Bean
 	public RobotManager robotManager() {
@@ -35,20 +32,24 @@ public class RobotClientAutoConfiguration {
 	}
 
 	@Bean
-	public void configureManager() {
+	public RobotClient client() {
 		RobotManager robotManager = RobotManager.getInstance();
 		RobotClientProperties clientProperties = properties.getClient();
 		String host = clientProperties.getHost();
+		RobotClient globalClient = null;
 		if (host != null) {
 			int port = clientProperties.getPort();
-			RobotClient client = robotManager.registerRobotClient(host, port, clientProperties.isUseWs());
-			context.getBeanFactory().registerSingleton("globalClient", client);
+			globalClient = robotManager.registerRobotClient(host, port, clientProperties.isUseWs());
 		}
 		List<Client> clients = properties.getClient().getClients();
 		boolean useWs = properties.getClient().isUseWs();
 		for (Client client : clients) {
 			robotManager.registerRobotClient(client.getHost(), client.getPort(), client.isUseWs() || useWs);
 		}
+		if (globalClient == null) {
+			globalClient = RobotManager.getGlobalClient();
+		}
 		logger.debug("robot manager 自动注册了{}个 robot client", robotManager.count());
+		return globalClient;
 	}
 }

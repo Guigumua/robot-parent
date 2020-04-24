@@ -15,7 +15,8 @@ public class RobotManager {
 	private static final RobotManager instance = new RobotManager();
 	private static final Logger logger = LoggerFactory.getLogger(RobotManager.class);
 	private static final Map<Long, RobotClient> CLIENTS = new HashMap<>();
-	
+	private static RobotClient globalClient;
+
 	private RobotManager() {
 	}
 
@@ -34,7 +35,7 @@ public class RobotManager {
 	public static RobotManager getInstance() {
 		return instance;
 	}
-	
+
 	public RobotClient registerRobotClient(String host, int port, boolean useWs) {
 		RobotClient client;
 		if (useWs) {
@@ -53,12 +54,17 @@ public class RobotManager {
 		} catch (Exception e) {
 			logger.warn("机器人注册失败！{}", e.getMessage());
 		}
+		if (globalClient == null) {
+			globalClient = client;
+		}
 		return client;
 	}
 
 	public int count() {
 		return CLIENTS.size();
 	}
-	
-	
+
+	public static RobotClient getGlobalClient() {
+		return globalClient;
+	}
 }
